@@ -1,0 +1,9 @@
+name = "isone-proxy"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Do NOT put credentials here — set ISONE_USER and ISONE_PASS
+# as encrypted secrets via:
+#   wrangler secret put ISONE_USER
+#   wrangler secret put ISONE_PASS
