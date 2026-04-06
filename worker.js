@@ -1,22 +1,16 @@
-/**
- * ISO-NE Web Services Proxy Worker
- * Proxies requests to webservices.iso-ne.com with Basic Auth
- * Deploy to Cloudflare Workers - set ISONE_USER and ISONE_PASS as secrets
- */
-
 const ISONE_BASE = 'https://webservices.iso-ne.com/api/v1.1';
 
-const ALLOWED_PATHS = [
-  '/fiveminutelmp/current/locationType/LOAD%20ZONE',
-  '/fiveminutesystemload/current',
-  '/fiveminuteexternalflow/current',
-  '/fiveminuteestimatedzonalload/current',
-  '/genfuelmix/current',
-  '/realtimeconstraints/current',
-  '/hourlylmp/rt/prelim/current',
+const ALLOWED = [
+  'fiveminutelmp',
+  'fiveminutesystemload',
+  'fiveminuteexternalflow',
+  'fiveminuteestimatedzonalload',
+  'genfuelmix',
+  'realtimeconstraints',
+  'hourlylmp',
 ];
 
-const CORS_HEADERS = {
+const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -24,67 +18,41 @@ const CORS_HEADERS = {
 
 export default {
   async fetch(request, env) {
-
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
-
-    if (request.method !== 'GET') {
-      return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-        status: 405,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-      });
+      return new Response(null, { status: 204, headers: CORS });
     }
 
     const url = new URL(request.url);
-    const path = url.pathname.replace(/^\/proxy/, '');
+    const path = url.pathname;
+    const firstSeg = path.split('/').filter(Boolean)[0] || '';
 
-    const isAllowed = ALLOWED_PATHS.some(p =>
-      path.startsWith(p.replace('%20', ' ')) ||
-      path.startsWith(p)
-    );
-
-    if (!isAllowed) {
-      return new Response(JSON.stringify({ error: 'Path not permitted', path }), {
+    if (!ALLOWED.includes(firstSeg)) {
+      return new Response(JSON.stringify({ error: 'Not permitted', path, firstSeg }), {
         status: 403,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        headers: { ...CORS, 'Content-Type': 'application/json' }
       });
     }
 
-    const credentials = btoa(`${env.ISONE_USER}:${env.ISONE_PASS}`);
-    const upstreamUrl = `${ISONE_BASE}${path}.json`;
+    const credentials = btoa(env.ISONE_USER + ':' + env.ISONE_PASS);
+    const upstreamUrl = ISONE_BASE + path + '.json';
 
-    let upstream;
     try {
-      upstream = await fetch(upstreamUrl, {
+      const upstream = await fetch(upstreamUrl, {
         headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Accept': 'application/json',
-        },
+          'Authorization': 'Basic ' + credentials,
+          'Accept': 'application/json'
+        }
+      });
+      const data = await upstream.text();
+      return new Response(data, {
+        status: upstream.status,
+        headers: { ...CORS, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
       });
     } catch (err) {
-      return new Response(JSON.stringify({ error: 'Upstream fetch failed', detail: err.message }), {
+      return new Response(JSON.stringify({ error: 'Upstream failed', detail: err.message }), {
         status: 502,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        headers: { ...CORS, 'Content-Type': 'application/json' }
       });
     }
-
-    if (!upstream.ok) {
-      return new Response(JSON.stringify({ error: 'Upstream error', status: upstream.status }), {
-        status: upstream.status,
-        headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const data = await upstream.text();
-
-    return new Response(data, {
-      status: 200,
-      headers: {
-        ...CORS_HEADERS,
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-      },
-    });
-  },
+  }
 };
