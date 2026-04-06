@@ -41,11 +41,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .panel{display:none;height:100%;overflow:auto}
 .panel.active{display:flex;flex-direction:column}
 #map{flex:1;min-height:400px}
-.map-overlay{position:absolute;bottom:36px;left:14px;background:rgba(255,255,255,0.95);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
-.map-overlay-title{color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px;font-size:10px;font-weight:600}
-.legend-row{display:flex;align-items:center;gap:8px;margin-bottom:4px;color:var(--text2)}
+.map-overlay{position:absolute;bottom:36px;left:14px;background:rgba(255,255,255,0.95);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.12);max-width:180px}
+.map-overlay-title{color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;font-size:10px;font-weight:600}
+.legend-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--text2);font-size:11px}
 .leg-swatch{width:11px;height:11px;border-radius:3px;flex-shrink:0}
 .leg-line{width:22px;height:3px;border-radius:1px;flex-shrink:0}
+.leg-arrow{font-size:13px;flex-shrink:0;line-height:1}
+.leg-sep{height:1px;background:var(--border);margin:7px 0}
 .maplibregl-popup-content{background:#fff!important;border:1px solid var(--border2)!important;border-radius:8px!important;padding:12px 16px!important;font-family:var(--sans)!important;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.15)!important}
 .popup-name{font-weight:600;font-size:13px;color:var(--text);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border)}
 .popup-row{display:flex;justify-content:space-between;gap:24px;font-size:12px;margin-bottom:4px}
@@ -85,7 +87,7 @@ tbody td{padding:10px 12px;color:var(--text);overflow:hidden;text-overflow:ellip
 .loading-text{font-size:13px;color:var(--text3);letter-spacing:0.05em}
 .loading-bar{width:180px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
 .loading-fill{height:100%;background:var(--accent);width:0;transition:width .3s;border-radius:2px}
-#transm-status{position:absolute;top:10px;left:10px;background:rgba(255,255,255,0.9);border:1px solid var(--border2);border-radius:6px;padding:5px 10px;font-size:11px;color:var(--text3);z-index:10;display:none}
+#map-status{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--text3);z-index:10;display:none;white-space:nowrap}
 @media(max-width:700px){#metrics-bar{grid-template-columns:repeat(3,1fr)}.metric:nth-child(4),.metric:nth-child(5){display:none}.charts-inner{grid-template-columns:1fr}.chart-card-full{grid-column:1}}
 </style>
 </head>
@@ -118,20 +120,23 @@ tbody td{padding:10px 12px;color:var(--text);overflow:hidden;text-overflow:ellip
   <div id="loading"><div class="loading-text">Loading live grid data</div><div class="loading-bar"><div class="loading-fill" id="loadBar"></div></div></div>
   <div id="panel-map" class="panel active">
     <div id="map"></div>
-    <div id="transm-status">Loading transmission lines...</div>
+    <div id="map-status"></div>
     <div class="map-overlay">
       <div class="map-overlay-title">LMP $/MWh</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#7b1fa2"></div>&lt; $0 negative</div>
+      <div class="legend-row"><div class="leg-swatch" style="background:#7b1fa2"></div>Negative</div>
       <div class="legend-row"><div class="leg-swatch" style="background:#43a047"></div>$0–30 low</div>
       <div class="legend-row"><div class="leg-swatch" style="background:#fb8c00"></div>$30–60 mid</div>
       <div class="legend-row"><div class="leg-swatch" style="background:#e53935"></div>$60–90 high</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#880e4f"></div>&gt; $90 spike</div>
-      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-        <div class="map-overlay-title">Transmission</div>
-        <div class="legend-row"><div class="leg-line" style="background:#e53935"></div>345+ kV</div>
-        <div class="legend-row"><div class="leg-line" style="background:#fb8c00"></div>115–345 kV</div>
-        <div class="legend-row"><div class="leg-line" style="background:#90a4ae"></div>&lt; 115 kV</div>
-      </div>
+      <div class="legend-row"><div class="leg-swatch" style="background:#880e4f"></div>&gt;$90 spike</div>
+      <div class="leg-sep"></div>
+      <div class="map-overlay-title">Transmission</div>
+      <div class="legend-row"><div class="leg-line" style="background:#c62828"></div>345+ kV</div>
+      <div class="legend-row"><div class="leg-line" style="background:#fb8c00"></div>115–345 kV</div>
+      <div class="legend-row"><div class="leg-line" style="background:#90a4ae"></div>&lt;115 kV</div>
+      <div class="leg-sep"></div>
+      <div class="map-overlay-title">Energy Flow</div>
+      <div class="legend-row"><span class="leg-arrow" style="color:#1a73e8">&#x2794;</span>External (real)</div>
+      <div class="legend-row"><span class="leg-arrow" style="color:#e65100">&#x2794;</span>Inter-zone (est.)</div>
     </div>
   </div>
   <div id="panel-table" class="panel">
@@ -173,10 +178,43 @@ tbody td{padding:10px 12px;color:var(--text);overflow:hidden;text-overflow:ellip
 </div>
 <script>
 const PROXY='https://isone-proxy.jsj-ai.workers.dev';
-const ZONES={4001:{id:'ME',name:'Maine'},4002:{id:'NH',name:'New Hampshire'},4003:{id:'VT',name:'Vermont'},4004:{id:'CT',name:'Connecticut'},4005:{id:'RI',name:'Rhode Island'},4006:{id:'SEMA',name:'SE Massachusetts'},4007:{id:'WCMA',name:'WC Massachusetts'},4008:{id:'NEMA',name:'NE Mass / Boston'}};
-const ZONE_COORDS={4001:[-69.3,45.4],4002:[-71.5,43.7],4003:[-72.7,44.0],4004:[-72.7,41.6],4005:[-71.5,41.7],4006:[-70.8,41.9],4007:[-72.5,42.2],4008:[-71.1,42.4]};
+const ZONES={
+  4001:{id:'ME', name:'Maine'},
+  4002:{id:'NH', name:'New Hampshire'},
+  4003:{id:'VT', name:'Vermont'},
+  4004:{id:'CT', name:'Connecticut'},
+  4005:{id:'RI', name:'Rhode Island'},
+  4006:{id:'SEMA',name:'SE Massachusetts'},
+  4007:{id:'WCMA',name:'WC Massachusetts'},
+  4008:{id:'NEMA',name:'NE Mass / Boston'}
+};
+const ZONE_COORDS={
+  4001:[-69.3,45.4],4002:[-71.5,43.7],4003:[-72.7,44.0],
+  4004:[-72.7,41.6],4005:[-71.5,41.7],4006:[-70.8,41.9],
+  4007:[-72.5,42.2],4008:[-71.1,42.4]
+};
+
+// Adjacent zone pairs for inter-zonal flow arrows [fromId, toId, label]
+// Ordered low→high by typical flow direction under normal conditions
+const ZONE_ADJACENCY=[
+  [4003,4007,'VT→WCMA'],[4002,4008,'NH→NEMA'],[4001,4002,'ME→NH'],
+  [4007,4008,'WCMA→NEMA'],[4008,4006,'NEMA→SEMA'],[4008,4004,'NEMA→CT'],
+  [4006,4005,'SEMA→RI'],[4004,4005,'CT→RI']
+];
+
+// External interface real-world endpoints [name-fragment, entryLng, entryLat, label]
+const EXT_INTERFACES=[
+  {key:'SALBRYNB', lng:-73.7, lat:41.1, label:'NY (Norwalk)'},
+  {key:'ROSETON',  lng:-73.9, lat:41.6, label:'NY (Hudson)'},
+  {key:'HQMRL',   lng:-72.5, lat:45.0, label:'QC (NECEC)'},
+  {key:'HQ_P1',   lng:-73.0, lat:45.0, label:'QC (Ph1/2)'},
+  {key:'SHOREHAM', lng:-73.2, lat:44.0, label:'NY (Shoreham)'},
+];
+// New England "center" for external arrows pointing into/out of grid
+const NE_CENTER=[-71.8,43.2];
+
 let state={zones:{},flows:[],sysload:null,sortField:'lmp',sortDir:-1};
-let map=null,mapReady=false,pendingZoneUpdate=false;
+let map=null,mapReady=false;
 let chart1=null,chart2=null,chart3=null,chartsRendered=false;
 
 function lmpColor(v){
@@ -196,31 +234,53 @@ function initMap(){
   map.on('load',()=>{
     map.setGlyphs('https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf');
 
-    // Transmission lines source (empty to start)
+    // Transmission lines
     map.addSource('transmission',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'transm-low', type:'line',source:'transmission',filter:['<', ['to-number',['get','voltage']],115000],paint:{'line-color':'#90a4ae','line-width':0.7,'line-opacity':0.45}});
+    map.addLayer({id:'transm-mid', type:'line',source:'transmission',filter:['all',['>=',['to-number',['get','voltage']],115000],['<',['to-number',['get','voltage']],345000]],paint:{'line-color':'#fb8c00','line-width':['interpolate',['linear'],['zoom'],6,1,10,2.5],'line-opacity':0.7}});
+    map.addLayer({id:'transm-high',type:'line',source:'transmission',filter:['>=',['to-number',['get','voltage']],345000],paint:{'line-color':'#c62828','line-width':['interpolate',['linear'],['zoom'],6,1.5,10,3.5],'line-opacity':0.85}});
 
-    // 345+ kV lines — red, thick
-    map.addLayer({id:'transm-high',type:'line',source:'transmission',filter:['>=',['to-number',['get','voltage']],345000],paint:{'line-color':'#e53935','line-width':['interpolate',['linear'],['zoom'],6,1.5,10,3],'line-opacity':0.85}});
-    // 115-345 kV — orange
-    map.addLayer({id:'transm-mid',type:'line',source:'transmission',filter:['all',['>=',['to-number',['get','voltage']],115000],['<',['to-number',['get','voltage']],345000]],paint:{'line-color':'#fb8c00','line-width':['interpolate',['linear'],['zoom'],6,1,10,2],'line-opacity':0.75}});
-    // < 115 kV — gray
-    map.addLayer({id:'transm-low',type:'line',source:'transmission',filter:['<',['to-number',['get','voltage']],115000],paint:{'line-color':'#90a4ae','line-width':0.8,'line-opacity':0.5}});
+    // External flow arrows (real measured data) — solid blue
+    map.addSource('ext-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'ext-flow-line',type:'line',source:'ext-flows',paint:{
+      'line-color':'#1a73e8','line-width':['interpolate',['linear'],['get','mwAbs'],0,2,2000,6],
+      'line-opacity':0.85,'line-dasharray':[1,0]
+    }});
+    map.addLayer({id:'ext-flow-label',type:'symbol',source:'ext-flows',layout:{
+      'symbol-placement':'line-center',
+      'text-field':['concat',['get','label'],'\n',['get','mwStr']],
+      'text-font':['Noto Sans Bold','Noto Sans Regular'],
+      'text-size':10,'text-anchor':'center','text-allow-overlap':false,
+      'text-offset':[0,-1.2]
+    },paint:{'text-color':'#1a73e8','text-halo-color':'rgba(255,255,255,0.9)','text-halo-width':2}});
 
-    // Zone circles
+    // Inter-zonal flow arrows (estimated from LMP differential) — dashed orange
+    map.addSource('zone-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+    map.addLayer({id:'zone-flow-line',type:'line',source:'zone-flows',paint:{
+      'line-color':['get','color'],
+      'line-width':['interpolate',['linear'],['get','strength'],0,1,100,5],
+      'line-opacity':0.75,'line-dasharray':[3,2]
+    }});
+    map.addLayer({id:'zone-flow-label',type:'symbol',source:'zone-flows',layout:{
+      'symbol-placement':'line-center',
+      'text-field':['get','diffStr'],
+      'text-font':['Noto Sans Regular','Noto Sans Regular'],
+      'text-size':9,'text-allow-overlap':false,'text-offset':[0,-0.8]
+    },paint:{'text-color':'#e65100','text-halo-color':'rgba(255,255,255,0.9)','text-halo-width':1.5}});
+
+    // Zone circles — on top
     map.addSource('zones',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
     map.addLayer({id:'zone-fill',type:'circle',source:'zones',paint:{
-      'circle-radius':['interpolate',['linear'],['zoom'],6,22,10,40],
-      'circle-color':['get','color'],
-      'circle-opacity':0.88,
-      'circle-stroke-width':2.5,
-      'circle-stroke-color':'rgba(255,255,255,0.95)'
+      'circle-radius':['interpolate',['linear'],['zoom'],6,20,10,38],
+      'circle-color':['get','color'],'circle-opacity':0.9,
+      'circle-stroke-width':2.5,'circle-stroke-color':'rgba(255,255,255,0.95)'
     }});
     map.addLayer({id:'zone-label',type:'symbol',source:'zones',layout:{
       'text-field':['concat',['get','zoneId'],'\n',['get','lmpStr']],
       'text-font':['Noto Sans Bold','Noto Sans Regular'],
       'text-size':11,'text-anchor':'center',
       'text-allow-overlap':true,'text-ignore-placement':true
-    },paint:{'text-color':'#ffffff','text-halo-color':'rgba(0,0,0,0.5)','text-halo-width':1.5}});
+    },paint:{'text-color':'#ffffff','text-halo-color':'rgba(0,0,0,0.45)','text-halo-width':1.5}});
 
     map.on('click','zone-fill',e=>{
       const p=e.features[0].properties,z=state.zones[parseInt(p.locId)];
@@ -228,7 +288,7 @@ function initMap(){
       new maplibregl.Popup({closeButton:true,offset:24}).setLngLat(e.lngLat).setHTML(
         '<div class="popup-name">'+z.name+' <span style="color:#999;font-size:11px">('+z.zoneId+')</span></div>'+
         '<div class="popup-row"><span class="popup-key">LMP</span><span class="popup-val">'+(z.lmp!==null?'$'+z.lmp.toFixed(2)+'/MWh':'—')+'</span></div>'+
-        '<div class="popup-row"><span class="popup-key">Energy</span><span class="popup-val">'+(z.energy!==null?'$'+z.energy.toFixed(2):'—')+'</span></div>'+
+        '<div class="popup-row"><span class="popup-key">Energy component</span><span class="popup-val">'+(z.energy!==null?'$'+z.energy.toFixed(2):'—')+'</span></div>'+
         '<div class="popup-row"><span class="popup-key">Congestion</span><span class="popup-val">'+(z.cong!==null?'$'+z.cong.toFixed(2):'—')+'</span></div>'+
         '<div class="popup-row"><span class="popup-key">Loss</span><span class="popup-val">'+(z.loss!==null?'$'+z.loss.toFixed(2):'—')+'</span></div>'+
         '<div class="popup-row"><span class="popup-key">Load</span><span class="popup-val">'+(z.load!==null?Math.round(z.load).toLocaleString()+' MW':'—')+'</span></div>'+
@@ -244,58 +304,98 @@ function initMap(){
   });
 }
 
+// Build a curved arc between two lon/lat points for flow arrows
+function makeArc(from, to, curvature=0.3){
+  const steps=12;
+  const coords=[];
+  const mx=(from[0]+to[0])/2, my=(from[1]+to[1])/2;
+  const dx=to[0]-from[0], dy=to[1]-from[1];
+  const cx=mx-curvature*dy, cy=my+curvature*dx;
+  for(let i=0;i<=steps;i++){
+    const t=i/steps;
+    const x=(1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0];
+    const y=(1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1];
+    coords.push([x,y]);
+  }
+  return coords;
+}
+
 function updateMap(){
-  if(!mapReady||!map.getSource('zones'))return;
-  const features=Object.values(state.zones).map(z=>{
+  if(!mapReady)return;
+
+  // Zone circles
+  const zoneFeatures=Object.values(state.zones).map(z=>{
     const coords=ZONE_COORDS[z.locId]||[-71.8,42.4];
     return{type:'Feature',geometry:{type:'Point',coordinates:coords},
       properties:{locId:z.locId,zoneId:z.zoneId,color:lmpColor(z.lmp),
         lmpStr:z.lmp!==null?'$'+z.lmp.toFixed(1):'-',name:z.name}};
   });
-  map.getSource('zones').setData({type:'FeatureCollection',features});
+  map.getSource('zones').setData({type:'FeatureCollection',features:zoneFeatures});
+
+  // External flow arrows — solid blue arcs from border entry to NE center
+  const extFeatures=[];
+  for(const ifc of EXT_INTERFACES){
+    const flow=state.flows.find(f=>f.name.includes(ifc.key));
+    if(!flow||Math.abs(flow.flow)<5)continue;
+    const mw=flow.flow;
+    // negative = importing INTO NE → arrow from border to center
+    // positive = exporting OUT of NE → arrow from center to border
+    const from=mw<0?[ifc.lng,ifc.lat]:NE_CENTER;
+    const to=  mw<0?NE_CENTER:[ifc.lng,ifc.lat];
+    const coords=makeArc(from,to,0.15);
+    extFeatures.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},
+      properties:{label:ifc.label,mwAbs:Math.abs(mw),mwStr:(mw<0?'↓ ':'+')+(Math.round(Math.abs(mw)))+' MW',
+        importing:mw<0}});
+  }
+  map.getSource('ext-flows').setData({type:'FeatureCollection',features:extFeatures});
+
+  // Inter-zonal flow arrows — dashed orange, derived from LMP differential
+  const zoneFlowFeatures=[];
+  for(const [fromId,toId,label] of ZONE_ADJACENCY){
+    const zFrom=state.zones[fromId], zTo=state.zones[toId];
+    if(!zFrom||!zTo||zFrom.lmp===null||zTo.lmp===null)continue;
+    const diff=zTo.lmp-zFrom.lmp; // positive = price higher at destination = flow from→to
+    const absDiff=Math.abs(diff);
+    if(absDiff<0.5)continue; // ignore negligible differentials
+    // If diff>0 flow goes from→to (normal), if diff<0 flow goes to→from (reversed)
+    const actualFrom=diff>0?ZONE_COORDS[fromId]:ZONE_COORDS[toId];
+    const actualTo=  diff>0?ZONE_COORDS[toId]:ZONE_COORDS[fromId];
+    const coords=makeArc(actualFrom,actualTo,0.2);
+    // Color by congestion: high differential = constrained (red-orange), low = normal (blue-green)
+    const color=absDiff>20?'#e53935':absDiff>5?'#e65100':'#1a73e8';
+    zoneFlowFeatures.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},
+      properties:{label,strength:Math.min(absDiff,100),diffStr:'Δ$'+absDiff.toFixed(1),color,
+        fromZone:diff>0?ZONES[fromId]?.id:ZONES[toId]?.id,
+        toZone:diff>0?ZONES[toId]?.id:ZONES[fromId]?.id}});
+  }
+  map.getSource('zone-flows').setData({type:'FeatureCollection',features:zoneFlowFeatures});
 }
 
 async function loadTransmissionLines(){
-  const el=document.getElementById('transm-status');
-  el.style.display='block';
-  el.textContent='Loading transmission lines...';
-
-  // Overpass query — high voltage power lines in New England bounding box
+  showStatus('Loading transmission lines...');
   const bbox='41.0,-73.8,47.5,-66.8';
   const query='[out:json][timeout:30];(way["power"="line"]["voltage"]('+bbox+'););out geom;';
-  const mirrors=[
-    'https://overpass-api.de/api/interpreter',
-    'https://overpass.kumi.systems/api/interpreter',
-    'https://overpass.openstreetmap.fr/api/interpreter'
-  ];
-
+  const mirrors=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
   let data=null;
   for(const url of mirrors){
-    try{
-      const res=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(query)});
-      if(res.ok){data=await res.json();break;}
-    }catch(e){continue;}
+    try{const r=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(query)});if(r.ok){data=await r.json();break;}}catch(e){continue;}
   }
-
-  if(!data||!data.elements?.length){
-    el.textContent='Transmission lines unavailable';
-    setTimeout(()=>el.style.display='none',3000);
-    return;
-  }
-
+  if(!data||!data.elements?.length){showStatus('Transmission data unavailable',3000);return;}
   const features=[];
   for(const way of data.elements){
     if(!way.geometry||way.geometry.length<2)continue;
     const coords=way.geometry.map(pt=>[pt.lon,pt.lat]);
-    const voltageStr=way.tags?.voltage||'0';
-    const voltage=parseInt(voltageStr.split(';')[0])||0;
-    features.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},
-      properties:{voltage,name:way.tags?.name||'',operator:way.tags?.operator||''}});
+    const voltage=parseInt((way.tags?.voltage||'0').split(';')[0])||0;
+    features.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},properties:{voltage,name:way.tags?.name||'',operator:way.tags?.operator||''}});
   }
-
   map.getSource('transmission').setData({type:'FeatureCollection',features});
-  el.textContent=features.length.toLocaleString()+' transmission segments loaded';
-  setTimeout(()=>el.style.display='none',3000);
+  showStatus(features.length.toLocaleString()+' transmission segments loaded',3000);
+}
+
+function showStatus(msg,hideAfter){
+  const el=document.getElementById('map-status');
+  el.textContent=msg;el.style.display='block';
+  if(hideAfter)setTimeout(()=>el.style.display='none',hideAfter);
 }
 
 async function fetchAll(){
@@ -318,15 +418,16 @@ async function fetchAll(){
       state.zones[parseInt(id)]={locId:parseInt(id),zoneId:meta.id,name:meta.name,
         lmp:lmp?lmp.LmpTotal:null,energy:lmp?lmp.EnergyComponent:null,
         cong:lmp?lmp.CongestionComponent:null,loss:lmp?lmp.LossComponent:null,
-        load:zl?zl.estimated_load_mw:null,btm:zl?zl.estimated_btm_pv_mw:null,ts:lmp?lmp.BeginDate:null};
+        load:zl?zl.estimated_load_mw:null,btm:zl?zl.estimated_btm_pv_mw:null,
+        ts:lmp?lmp.BeginDate:null};
     });
     const sl=loadR.value?.FiveMinSystemLoad;
     state.sysload=Array.isArray(sl)?sl[0]:sl||null;
     state.flows=(flowR.value?.ExternalFlows?.ExternalFlow||[]).map(f=>({
-      name:(f.Location?.['$']||'').replace('.I.','').replace(/ \d+$/,''),flow:f.ActualFlow||0}));
+      name:(f.Location?.['\$']||'').replace('.I.',''),flow:f.ActualFlow||0}));
     setLoadBar(90);
     updateMetrics();
-    if(mapReady)updateMap(); else pendingZoneUpdate=true;
+    if(mapReady)updateMap();
     renderTable();
     if(chartsRendered){renderMainChart(document.getElementById('chartSel').value);renderComponentChart();renderFlowChart();}
     setLoadBar(100);
@@ -337,28 +438,15 @@ async function fetchAll(){
   }catch(e){setLive('error','Error');console.error(e);}
 }
 
-function setLive(type,msg){
-  const dot=document.getElementById('liveDot');
-  dot.className='live-dot'+(type==='loading'?' loading':type==='error'?' error':'');
-  document.getElementById('liveText').textContent=msg;
-}
+function setLive(type,msg){const dot=document.getElementById('liveDot');dot.className='live-dot'+(type==='loading'?' loading':type==='error'?' error':'');document.getElementById('liveText').textContent=msg;}
 function setLoadBar(p){document.getElementById('loadBar').style.width=p+'%';}
 
 function updateMetrics(){
   const sl=state.sysload;
-  if(sl){
-    document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();
-    document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();
-  }
+  if(sl){document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();}
   const zArr=Object.values(state.zones).filter(z=>z.lmp!==null);
-  if(zArr.length){
-    const avg=zArr.reduce((s,z)=>s+z.lmp,0)/zArr.length;
-    document.getElementById('m-lmp').textContent='$'+avg.toFixed(2);
-    const pk=zArr.reduce((a,b)=>a.lmp>b.lmp?a:b);
-    document.getElementById('m-peak').textContent=pk.zoneId+' $'+pk.lmp.toFixed(0);
-  }
-  const net=state.flows.reduce((s,f)=>s+f.flow,0);
-  document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
+  if(zArr.length){const avg=zArr.reduce((s,z)=>s+z.lmp,0)/zArr.length;document.getElementById('m-lmp').textContent='$'+avg.toFixed(2);const pk=zArr.reduce((a,b)=>a.lmp>b.lmp?a:b);document.getElementById('m-peak').textContent=pk.zoneId+' $'+pk.lmp.toFixed(0);}
+  const net=state.flows.reduce((s,f)=>s+f.flow,0);document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
 }
 
 function renderTable(){
@@ -409,7 +497,11 @@ function renderComponentChart(){
   if(chart2){chart2.destroy();chart2=null;}
   const ctx=document.getElementById('chart2').getContext('2d');
   const zones=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>b.lmp-a.lmp);
-  chart2=new Chart(ctx,{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'#1a73e8',stack:'s',borderSkipped:false},{label:'Congestion',data:zones.map(z=>z.cong||0),backgroundColor:'#e53935',stack:'s',borderSkipped:false},{label:'Loss',data:zones.map(z=>z.loss||0),backgroundColor:'#90a4ae',stack:'s',borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)}}},scales:{x:{ticks:{color:TC},grid:{color:GO.color},stacked:true},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO.color},stacked:true}}}});
+  chart2=new Chart(ctx,{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[
+    {label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'#1a73e8',stack:'s',borderSkipped:false},
+    {label:'Congestion',data:zones.map(z=>z.cong||0),backgroundColor:'#e53935',stack:'s',borderSkipped:false},
+    {label:'Loss',data:zones.map(z=>z.loss||0),backgroundColor:'#90a4ae',stack:'s',borderSkipped:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)}}},scales:{x:{ticks:{color:TC},grid:{color:GO.color},stacked:true},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO.color},stacked:true}}}});
 }
 function renderFlowChart(){
   if(chart3){chart3.destroy();chart3=null;}
@@ -417,12 +509,10 @@ function renderFlowChart(){
   const fl=state.flows.filter(f=>Math.abs(f.flow)>0.5);
   chart3=new Chart(ctx,{type:'bar',data:{labels:fl.map(f=>f.name.substring(0,16)),datasets:[{data:fl.map(f=>f.flow),backgroundColor:fl.map(f=>f.flow<0?'#1a73e8':'#e53935'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.parsed.x>0?'+':'')+c.parsed.x.toFixed(1)+' MW'}}},scales:{x:{ticks:{color:TC,callback:v=>(v>0?'+':'')+v},grid:{color:GO.color}},y:{ticks:{color:TC},grid:{color:GO.color}}}}});
 }
-
 function switchTab(name,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');document.getElementById('panel-'+name).classList.add('active');
   if(name==='map')setTimeout(()=>map&&map.resize(),50);
   if(name==='charts'){chartsRendered=true;setTimeout(()=>{renderMainChart(document.getElementById('chartSel').value);renderComponentChart();renderFlowChart();},50);}
 }
