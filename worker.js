@@ -16,6 +16,13 @@ const CORS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
+function toBase64(str) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === 'OPTIONS') {
@@ -33,14 +40,15 @@ export default {
       });
     }
 
-    const credentials = btoa(env.ISONE_USER + ':' + env.ISONE_PASS);
+    const credentials = toBase64(env.ISONE_USER + ':' + env.ISONE_PASS);
     const upstreamUrl = ISONE_BASE + path + '.json';
 
     try {
       const upstream = await fetch(upstreamUrl, {
         headers: {
           'Authorization': 'Basic ' + credentials,
-          'Accept': 'application/json'
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
         }
       });
       const data = await upstream.text();
