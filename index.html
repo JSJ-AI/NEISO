@@ -335,7 +335,7 @@ function updateMap(){
   // External flow arrows — solid blue arcs from border entry to NE center
   const extFeatures=[];
   for(const ifc of EXT_INTERFACES){
-    const flow=state.flows.find(f=>f.name.includes(ifc.key));
+    const flow=state.flows.find(f=>f.name.toUpperCase().includes(ifc.key.toUpperCase()));
     if(!flow||Math.abs(flow.flow)<5)continue;
     const mw=flow.flow;
     // negative = importing INTO NE → arrow from border to center
