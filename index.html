@@ -438,42 +438,177 @@ function toggleFlows(){
 
 // ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Schematic ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 function renderSchematic(){
+  const wrap=document.querySelector('.schematic-wrap');
   const svg=document.getElementById('schematic-svg');
-  svg.setAttribute('viewBox','0 0 820 570');
+
+  // Make SVG large and let the container scroll/zoom
+  const VW=1100, VH=760;
+  svg.setAttribute('viewBox','0 0 '+VW+' '+VH);
+  svg.setAttribute('width', VW);
+  svg.setAttribute('height', VH);
+  svg.style.maxWidth='none';
+  svg.style.filter='drop-shadow(0 2px 12px rgba(0,0,0,0.1))';
   svg.innerHTML='';
+
+  // Zoom/pan state
+  if(!wrap._schZoom){
+    wrap._schZoom=1;
+    wrap._schX=0;
+    wrap._schY=0;
+    wrap.style.overflow='auto';
+    wrap.style.cursor='grab';
+    wrap.style.userSelect='none';
+    wrap.style.padding='20px';
+    wrap.style.alignItems='flex-start';
+    wrap.style.justifyContent='flex-start';
+
+    // Scroll wheel zoom
+    wrap.addEventListener('wheel',function(e){
+      e.preventDefault();
+      const delta=e.deltaY>0?0.9:1.1;
+      wrap._schZoom=Math.min(Math.max(wrap._schZoom*delta,0.4),3);
+      svg.style.transform='scale('+wrap._schZoom+')';
+      svg.style.transformOrigin='top left';
+    },{passive:false});
+
+    // Reset zoom on double-click
+    wrap.addEventListener('dblclick',function(){
+      wrap._schZoom=1;
+      svg.style.transform='scale(1)';
+    });
+  }
+  svg.style.transform='scale('+wrap._schZoom+')';
+  svg.style.transformOrigin='top left';
+
   const NS='http://www.w3.org/2000/svg';
   function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(txt!==undefined)e.textContent=txt;return e;}
   function ap(p,...ch){ch.forEach(c=>p.appendChild(c));return p;}
+
   const FC={'Natural Gas':'#f4511e','Nuclear':'#8e24aa','Hydro':'#1a73e8','Wind':'#43a047','Solar':'#f9a825','Oil':'#795548','Other':'#90a4ae','Wood':'#6d4c41','Refuse':'#546e7a','Landfill Gas':'#00acc1','Coal':'#616161'};
-  const ZP={ME:{x:600,y:55,w:170,h:115},NH:{x:420,y:60,w:158,h:110},VT:{x:240,y:55,w:158,h:110},WCMA:{x:240,y:225,w:168,h:118},NEMA:{x:420,y:225,w:158,h:118},SEMA:{x:598,y:225,w:170,h:118},CT:{x:80,y:400,w:175,h:120},RI:{x:440,y:400,w:158,h:120}};
-  ap(svg,el('rect',{x:0,y:0,width:820,height:570,fill:'#f8f9fa'}));
+
+  // Zone positions — larger boxes with more breathing room
+  const ZP={
+    ME:  {x:740,y:70, w:210,h:150},
+    NH:  {x:510,y:75, w:200,h:142},
+    VT:  {x:280,y:70, w:200,h:142},
+    WCMA:{x:280,y:290,w:210,h:150},
+    NEMA:{x:510,y:290,w:200,h:150},
+    SEMA:{x:738,y:290,w:212,h:150},
+    CT:  {x:80, y:515,w:220,h:155},
+    RI:  {x:550,y:515,w:200,h:155},
+  };
+
+  // Background
+  ap(svg,el('rect',{x:0,y:0,width:VW,height:VH,fill:'#f8f9fa'}));
+
+  // ── Top bar: fuel mix ──
   const tot=state.fuelMix.reduce((s,f)=>s+(f.GenMw||0),0);
   const ftop=state.fuelMix.filter(f=>(f.GenMw||0)>30).sort((a,b)=>b.GenMw-a.GenMw).slice(0,7);
-  ap(svg,el('text',{x:12,y:11,'font-size':'9','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'Generation mix'));
-  let bx=12;
-  ftop.forEach(f=>{const fw=Math.round((f.GenMw||0)/tot*200);const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';ap(svg,el('rect',{x:bx,y:14,width:fw,height:11,fill:fc,rx:1}));bx+=fw;});
-  let lx=12;
-  ftop.slice(0,6).forEach(f=>{const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';const pct=Math.round((f.GenMw||0)/tot*100);ap(svg,el('rect',{x:lx,y:28,width:7,height:7,fill:fc,rx:1}),el('text',{x:lx+9,y:35,'font-size':'8.5','font-family':'Inter,sans-serif',fill:'#666'},(f.FuelCategory||f.FuelCategoryRollup||'?').substring(0,9)+' '+pct+'%'));lx+=70;});
+  ap(svg,el('text',{x:16,y:16,'font-size':'12','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'GENERATION MIX'));
+  let bx=16;
+  const BARW=260,BARH=14;
+  ftop.forEach(f=>{const fw=Math.round((f.GenMw||0)/tot*BARW);const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';ap(svg,el('rect',{x:bx,y:20,width:fw,height:BARH,fill:fc,rx:1}));bx+=fw;});
+  let lx=16;
+  ftop.slice(0,6).forEach(f=>{
+    const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';
+    const pct=Math.round((f.GenMw||0)/tot*100);
+    const mw=Math.round(f.GenMw||0).toLocaleString();
+    ap(svg,el('rect',{x:lx,y:38,width:9,height:9,fill:fc,rx:1}),el('text',{x:lx+12,y:47,'font-size':'11','font-family':'Inter,sans-serif',fill:'#555'},(f.FuelCategory||f.FuelCategoryRollup||'?').substring(0,11)+' '+pct+'% / '+mw+'MW'));
+    lx+=160;
+  });
+
+  // System stats top right
   const sl=state.sysload;
-  if(sl){const net=Math.round(state.flows.reduce((s,f)=>s+(f.flow||0),0));const solar=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0));[['System load',Math.round(sl.LoadMw||0).toLocaleString()+' MW'],['Solar BTM',solar.toLocaleString()+' MW'],['Net interchange',(net>=0?'+':'')+net+' MW']].forEach(([lb,vl],i)=>{ap(svg,el('text',{x:808,y:11+i*13,'text-anchor':'end','font-size':'9','font-family':'Inter,sans-serif','font-weight':'500',fill:'#888'},lb),el('text',{x:808,y:11+i*13,'text-anchor':'start','font-size':'9','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:'#333',dx:'4'},vl));});}
-  function lmpC(v){if(v===null)return{fill:'#eceff1',border:'#90a4ae',text:'#546e7a',hdr:'#90a4ae'};if(v<0)return{fill:'#f3e5f5',border:'#7b1fa2',text:'#6a1b9a',hdr:'#7b1fa2'};if(v<30)return{fill:'#e8f5e9',border:'#43a047',text:'#2e7d32',hdr:'#43a047'};if(v<60)return{fill:'#fff3e0',border:'#fb8c00',text:'#e65100',hdr:'#fb8c00'};if(v<90)return{fill:'#ffebee',border:'#e53935',text:'#c62828',hdr:'#e53935'};return{fill:'#fce4ec',border:'#880e4f',text:'#880e4f',hdr:'#880e4f'};}
+  if(sl){
+    const net=Math.round(state.flows.reduce((s,f)=>s+(f.flow||0),0));
+    const solar=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0));
+    [['System load',Math.round(sl.LoadMw||0).toLocaleString()+' MW'],
+     ['Solar BTM offset',solar.toLocaleString()+' MW'],
+     ['Net interchange',(net>=0?'+':'')+net+' MW']
+    ].forEach(([lb,vl],i)=>{
+      ap(svg,
+        el('text',{x:VW-16,y:16+i*17,'text-anchor':'end','font-size':'11','font-family':'Inter,sans-serif','font-weight':'500',fill:'#888'},lb),
+        el('text',{x:VW-16,y:16+i*17,'text-anchor':'start','font-size':'12','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:'#333',dx:'5'},vl)
+      );
+    });
+  }
+
+  // ── Zoom hint ──
+  ap(svg,el('text',{x:VW/2,y:59,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'Scroll to zoom · Double-click to reset'));
+
+  // ── Color helper ──
+  function lmpC(v){
+    if(v===null)return{fill:'#eceff1',border:'#90a4ae',text:'#546e7a',hdr:'#90a4ae'};
+    if(v<0)  return{fill:'#f3e5f5',border:'#7b1fa2',text:'#6a1b9a',hdr:'#7b1fa2'};
+    if(v<30) return{fill:'#e8f5e9',border:'#43a047',text:'#2e7d32',hdr:'#43a047'};
+    if(v<60) return{fill:'#fff3e0',border:'#fb8c00',text:'#e65100',hdr:'#fb8c00'};
+    if(v<90) return{fill:'#ffebee',border:'#e53935',text:'#c62828',hdr:'#e53935'};
+    return{fill:'#fce4ec',border:'#880e4f',text:'#880e4f',hdr:'#880e4f'};
+  }
+
+  // ── Zone box ──
   function drawZone(zid){
     const pos=ZP[zid];if(!pos)return;
     const zs=Object.values(state.zones).find(z=>z.zoneId===zid);
-    const lmp=zs?zs.lmp:null;const {fill,border,text,hdr}=lmpC(lmp);const g=el('g',{});
-    ap(g,el('rect',{x:pos.x+2,y:pos.y+2,width:pos.w,height:pos.h,fill:'rgba(0,0,0,0.07)',rx:8}));
-    ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:pos.h,fill,stroke:border,'stroke-width':2,rx:8}));
-    ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:24,fill:hdr,rx:8}));
-    ap(g,el('rect',{x:pos.x,y:pos.y+16,width:pos.w,height:8,fill:hdr}));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+16,'text-anchor':'middle','font-size':'11','font-family':'Inter,sans-serif','font-weight':'700',fill:'#fff'},zid));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+44,'text-anchor':'middle','font-size':'17','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:text},lmp!==null?'$'+lmp.toFixed(2):'-'));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+54,'text-anchor':'middle','font-size':'8','font-family':'Inter,sans-serif',fill:'#aaa'},'$/MWh LMP'));
-    ap(g,el('line',{x1:pos.x+10,y1:pos.y+60,x2:pos.x+pos.w-10,y2:pos.y+60,stroke:'rgba(0,0,0,0.1)','stroke-width':'0.5'}));
-    if(zs&&zs.load!=null){ap(g,el('text',{x:pos.x+10,y:pos.y+71,'font-size':'8','font-family':'Inter,sans-serif','font-weight':'600',fill:'#777'},'LOAD'),el('text',{x:pos.x+10,y:pos.y+82,'font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#333'},Math.round(zs.load).toLocaleString()+' MW'));}
-    if(zs&&zs.btm!=null&&zs.btm>0){ap(g,el('text',{x:pos.x+pos.w-10,y:pos.y+71,'text-anchor':'end','font-size':'8','font-family':'Inter,sans-serif','font-weight':'600',fill:'#777'},'BTM \u2600'),el('text',{x:pos.x+pos.w-10,y:pos.y+82,'text-anchor':'end','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW'));}
-    if(zs&&zs.energy!=null){const bw=pos.w-20,bh=6,by2=pos.y+pos.h-14,bxz=pos.x+10;const epx=Math.max(Math.min((zs.energy||0)/40,1)*bw,2);const cpx=Math.min(Math.abs(zs.cong||0)/5,1)*(bw*0.25);ap(g,el('rect',{x:bxz,y:by2,width:bw,height:bh,fill:'rgba(0,0,0,0.07)',rx:2}),el('rect',{x:bxz,y:by2,width:epx,height:bh,fill:'#1a73e8',rx:2}));if(Math.abs(zs.cong||0)>0.1)ap(g,el('rect',{x:bxz+epx,y:by2,width:Math.max(cpx,1.5),height:bh,fill:(zs.cong||0)>0?'#e53935':'#7b1fa2',rx:1}));ap(g,el('text',{x:bxz,y:by2-2,'font-size':'7.5','font-family':'Inter,sans-serif',fill:'#aaa'},'E:$'+(zs.energy||0).toFixed(1)+(Math.abs(zs.cong||0)>0.1?' C:$'+(zs.cong||0).toFixed(1):'')));}
+    const lmp=zs?zs.lmp:null;
+    const {fill,border,text,hdr}=lmpC(lmp);
+    const g=el('g',{});
+
+    // Shadow
+    ap(g,el('rect',{x:pos.x+3,y:pos.y+3,width:pos.w,height:pos.h,fill:'rgba(0,0,0,0.08)',rx:10}));
+    // Body
+    ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:pos.h,fill,stroke:border,'stroke-width':2.5,rx:10}));
+    // Header bar
+    ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:32,fill:hdr,rx:10}));
+    ap(g,el('rect',{x:pos.x,y:pos.y+22,width:pos.w,height:10,fill:hdr}));
+    // Zone ID
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+22,'text-anchor':'middle','font-size':'15','font-family':'Inter,sans-serif','font-weight':'700',fill:'#fff'},zid));
+
+    // Full zone name
+    const zoneName=zs?zs.name:zid;
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+44,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#aaa'},zoneName));
+
+    // LMP — large and prominent
+    const lmpStr=lmp!==null?'$'+lmp.toFixed(2):'-';
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+72,'text-anchor':'middle','font-size':'24','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:text},lmpStr));
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+84,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'$/MWh LMP'));
+
+    // Divider
+    ap(g,el('line',{x1:pos.x+12,y1:pos.y+90,x2:pos.x+pos.w-12,y2:pos.y+90,stroke:'rgba(0,0,0,0.1)','stroke-width':0.5}));
+
+    // Load and BTM
+    if(zs&&zs.load!=null){
+      ap(g,
+        el('text',{x:pos.x+12,y:pos.y+104,'font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'LOAD'),
+        el('text',{x:pos.x+12,y:pos.y+118,'font-size':'13','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#333'},Math.round(zs.load).toLocaleString()+' MW')
+      );
+    }
+    if(zs&&zs.btm!=null&&zs.btm>0){
+      ap(g,
+        el('text',{x:pos.x+pos.w-12,y:pos.y+104,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'\u2600 BTM SOLAR'),
+        el('text',{x:pos.x+pos.w-12,y:pos.y+118,'text-anchor':'end','font-size':'13','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW')
+      );
+    }
+
+    // Energy/congestion mini bar
+    if(zs&&zs.energy!=null){
+      const bw=pos.w-24,bh=7,by2=pos.y+pos.h-16,bxz=pos.x+12;
+      const epx=Math.max(Math.min((zs.energy||0)/60,1)*bw,2);
+      const cpx=Math.min(Math.abs(zs.cong||0)/10,1)*(bw*0.3);
+      ap(g,
+        el('rect',{x:bxz,y:by2,width:bw,height:bh,fill:'rgba(0,0,0,0.07)',rx:2}),
+        el('rect',{x:bxz,y:by2,width:epx,height:bh,fill:'#1a73e8',rx:2})
+      );
+      if(Math.abs(zs.cong||0)>0.1){
+        ap(g,el('rect',{x:bxz+epx,y:by2,width:Math.max(cpx,2),height:bh,fill:(zs.cong||0)>0?'#e53935':'#7b1fa2',rx:1}));
+      }
+      const eStr='E:$'+(zs.energy||0).toFixed(1)+(Math.abs(zs.cong||0)>0.1?' C:$'+(zs.cong||0).toFixed(1):'');
+      ap(g,el('text',{x:bxz,y:by2-3,'font-size':'9','font-family':'Inter,sans-serif',fill:'#bbb'},eStr));
+    }
     ap(svg,g);
   }
+
+  // ── Inter-zone flow arrow ──
   function drawZoneFlow(fId,tId,ox){
     const fp=ZP[fId],tp=ZP[tId];if(!fp||!tp)return;
     const zsF=Object.values(state.zones).find(z=>z.zoneId===fId);
@@ -481,44 +616,83 @@ function renderSchematic(){
     if(!zsF||!zsT||zsF.lmp===null||zsT.lmp===null)return;
     const diff=zsT.lmp-zsF.lmp;if(Math.abs(diff)<0.05)return;
     const sP=diff>0?fp:tp,dP=diff>0?tp:fp;
-    const sr=Math.abs(sP.y-dP.y)<60;
+    const sr=Math.abs(sP.y-dP.y)<80;
     let x1,y1,x2,y2;
-    if(sr){const gr=dP.x>sP.x;x1=gr?sP.x+sP.w:sP.x;y1=sP.y+sP.h/2;x2=gr?dP.x:dP.x+dP.w;y2=dP.y+dP.h/2;}
-    else{x1=sP.x+sP.w/2+(ox||0);y1=dP.y>sP.y?sP.y+sP.h:sP.y;x2=dP.x+dP.w/2+(ox||0);y2=dP.y>sP.y?dP.y:dP.y+dP.h;}
-    const ad=Math.abs(diff);const col=ad>20?'#e53935':ad>8?'#fb8c00':ad>3?'#1a73e8':'#90a4ae';
-    const sw=Math.max(1.2,Math.min(ad/3,3.5));
+    if(sr){
+      const gr=dP.x>sP.x;
+      x1=gr?sP.x+sP.w:sP.x;y1=sP.y+sP.h/2;
+      x2=gr?dP.x:dP.x+dP.w;y2=dP.y+dP.h/2;
+    } else {
+      x1=sP.x+sP.w/2+(ox||0);y1=dP.y>sP.y?sP.y+sP.h:sP.y;
+      x2=dP.x+dP.w/2+(ox||0);y2=dP.y>sP.y?dP.y:dP.y+dP.h;
+    }
+    const ad=Math.abs(diff);
+    const col=ad>20?'#e53935':ad>8?'#fb8c00':ad>3?'#1a73e8':'#90a4ae';
+    const sw=Math.max(1.5,Math.min(ad/3,4.5));
     const mx=(x1+x2)/2,my=(y1+y2)/2;
-    const ang=Math.atan2(y2-y1,x2-x1);const al=9,aw=4.5;
+    const ang=Math.atan2(y2-y1,x2-x1);const al=11,aw=6;
     const ax1=x2-al*Math.cos(ang)+aw*Math.sin(ang),ay1=y2-al*Math.sin(ang)-aw*Math.cos(ang);
     const ax2=x2-al*Math.cos(ang)-aw*Math.sin(ang),ay2=y2-al*Math.sin(ang)+aw*Math.cos(ang);
-    ap(svg,el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.8'}),el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col,opacity:'0.9'}),el('rect',{x:mx-18,y:my-7,width:36,height:13,fill:'rgba(255,255,255,0.88)',rx:3}),el('text',{x:mx,y:my+2,'text-anchor':'middle','font-size':'8','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'\u0394$'+ad.toFixed(2)));
+    ap(svg,
+      el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.75'}),
+      el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col,opacity:'0.9'}),
+      el('rect',{x:mx-22,y:my-9,width:44,height:17,fill:'rgba(255,255,255,0.92)',rx:4}),
+      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'\u0394$'+ad.toFixed(2))
+    );
   }
+
+  // ── External interface arrow ──
   function drawExtFlow(key,label,ex,ey,toZid,side){
     const flow=state.flows.find(f=>f.name.toUpperCase().includes(key.toUpperCase()));
     if(!flow||Math.abs(flow.flow)<5)return;
     const mw=Math.abs(Math.round(flow.flow));const imp=flow.flow<0;
     const tp=ZP[toZid];if(!tp)return;
     let tx,ty;
-    if(side==='left'){tx=tp.x;ty=tp.y+tp.h/2;}else if(side==='right'){tx=tp.x+tp.w;ty=tp.y+tp.h/2;}else if(side==='top'){tx=tp.x+tp.w/2;ty=tp.y;}else{tx=tp.x+tp.w/2;ty=tp.y+tp.h;}
+    if(side==='left'){tx=tp.x;ty=tp.y+tp.h/2;}
+    else if(side==='right'){tx=tp.x+tp.w;ty=tp.y+tp.h/2;}
+    else if(side==='top'){tx=tp.x+tp.w/2;ty=tp.y;}
+    else{tx=tp.x+tp.w/2;ty=tp.y+tp.h;}
     const x1=imp?ex:tx,y1=imp?ey:ty,x2=imp?tx:ex,y2=imp?ty:ey;
-    const col=imp?'#0d47a1':'#b71c1c';const sw=Math.min(2+mw/300,5.5);
-    const ang=Math.atan2(y2-y1,x2-x1);const al=10,aw=5;
+    const col=imp?'#0d47a1':'#b71c1c';
+    const sw=Math.min(2.5+mw/400,6.5);
+    const ang=Math.atan2(y2-y1,x2-x1);const al=12,aw=6;
     const ax1=x2-al*Math.cos(ang)+aw*Math.sin(ang),ay1=y2-al*Math.sin(ang)-aw*Math.cos(ang);
     const ax2=x2-al*Math.cos(ang)-aw*Math.sin(ang),ay2=y2-al*Math.sin(ang)+aw*Math.cos(ang);
     const mx=(x1+x2)/2,my=(y1+y2)/2;
-    ap(svg,el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.9'}),el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col}),el('rect',{x:mx-28,y:my-8,width:56,height:14,fill:'rgba(255,255,255,0.9)',rx:3,stroke:col,'stroke-width':'0.5'}),el('text',{x:mx,y:my+2,'text-anchor':'middle','font-size':'8.5','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'\u2193':'\u2191')+mw+'MW'));
+    ap(svg,
+      el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.9'}),
+      el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col}),
+      el('rect',{x:mx-34,y:my-10,width:68,height:19,fill:'rgba(255,255,255,0.93)',rx:4,stroke:col,'stroke-width':'0.8'}),
+      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'\u2193':'\u2191')+mw+'MW')
+    );
   }
-  drawZoneFlow('VT','WCMA');drawZoneFlow('NH','NEMA');drawZoneFlow('ME','NH',-20);
-  drawZoneFlow('WCMA','NEMA');drawZoneFlow('NEMA','SEMA');drawZoneFlow('NEMA','CT',20);
-  drawZoneFlow('SEMA','RI');drawZoneFlow('CT','RI');
-  drawExtFlow('ROSETON','NY-H',10,ZP.WCMA.y+ZP.WCMA.h/2,'WCMA','left');
-  drawExtFlow('SALBRYNB','NY-N',10,ZP.CT.y+ZP.CT.h/2,'CT','left');
-  drawExtFlow('HQMRL','QC-NE',ZP.ME.x+ZP.ME.w/2,10,'ME','top');
-  drawExtFlow('HQ_P1','QC-P1',ZP.VT.x+ZP.VT.w/2,10,'VT','top');
-  drawExtFlow('HQHIGATE','NB',810,ZP.ME.y+30,'ME','right');
+
+  // Draw flow connections first (behind boxes)
+  drawZoneFlow('VT','WCMA');
+  drawZoneFlow('NH','NEMA');
+  drawZoneFlow('ME','NH',-25);
+  drawZoneFlow('WCMA','NEMA');
+  drawZoneFlow('NEMA','SEMA');
+  drawZoneFlow('NEMA','CT',25);
+  drawZoneFlow('SEMA','RI');
+  drawZoneFlow('CT','RI');
+
+  // External interfaces
+  drawExtFlow('ROSETON', 'NY-H', 10, ZP.WCMA.y+ZP.WCMA.h/2, 'WCMA','left');
+  drawExtFlow('SALBRYNB','NY-N', 10, ZP.CT.y+ZP.CT.h/2,     'CT',  'left');
+  drawExtFlow('HQMRL',   'QC-NE',ZP.ME.x+ZP.ME.w/2, 12,     'ME',  'top');
+  drawExtFlow('HQ_P1',   'QC-P1',ZP.VT.x+ZP.VT.w/2, 12,     'VT',  'top');
+  drawExtFlow('HQHIGATE','NB',   VW-10, ZP.ME.y+40,          'ME',  'right');
+
+  // Zone boxes on top
   Object.keys(ZP).forEach(drawZone);
+
+  // Timestamp + legend
   const ts=Object.values(state.zones).find(z=>z.ts)?new Date(Object.values(state.zones).find(z=>z.ts).ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'--:--';
-  ap(svg,el('text',{x:410,y:563,'text-anchor':'middle','font-size':'8.5','font-family':'Inter,sans-serif',fill:'#ccc'},'ISO-NE Load Zones \u00b7 LMP $/MWh \u00b7 '+ts+' \u00b7 Arrow=energy flow \u00b7 \u0394$=price spread \u00b7 \u2193=import \u2191=export'));
+  ap(svg,
+    el('text',{x:VW/2,y:VH-8,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#ccc'},
+      'ISO-NE Load Zones \u00b7 LMP $/MWh \u00b7 '+ts+' \u00b7 Arrow = energy flow direction \u00b7 \u0394$ = price spread \u00b7 \u2193 = import \u2191 = export')
+  );
 }
 
 function renderCharts(){
