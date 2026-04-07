@@ -274,14 +274,14 @@ let map=null,mapReady=false,transmVisible=true,flowsVisible=true;
 let charts={};
 let chartsInited=false;
 
-// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Color helpers ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Color helpers ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 function lmpColor(v){if(v===null||v===undefined)return '#90a4ae';if(v<0)return '#7b1fa2';if(v<30)return '#43a047';if(v<60)return '#fb8c00';if(v<90)return '#e53935';return '#880e4f';}
 function lmpColorLight(v){if(v===null||v===undefined)return '#eceff1';if(v<0)return '#f3e5f5';if(v<30)return '#e8f5e9';if(v<60)return '#fff3e0';if(v<90)return '#ffebee';return '#fce4ec';}
 function lmpClass(v){if(v===null)return '';if(v<0)return 'lmp-neg';if(v>65)return 'lmp-high';if(v>35)return 'lmp-mid';return 'lmp-low';}
 function badgeHtml(v){if(v===null)return '';if(v<0)return '<span class="badge badge-neg">NEG</span>';if(v>65)return '<span class="badge badge-high">HIGH</span>';if(v>35)return '<span class="badge badge-mid">MID</span>';return '<span class="badge badge-low">LOW</span>';}
 function makeArc(from,to,c=0.25){const s=16,pts=[],mx=(from[0]+to[0])/2,my=(from[1]+to[1])/2,dx=to[0]-from[0],dy=to[1]-from[1],cx=mx-c*dy,cy=my+c*dx;for(let i=0;i<=s;i++){const t=i/s;pts.push([(1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0],(1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1]]);}return pts;}
 
-// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Map init ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Map init ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 function initMap(){
   map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.4],zoom:6.8,attributionControl:false});
   map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
@@ -328,7 +328,7 @@ function onMapReady(){
       '<div class="popup-name">'+z.name+' <span style="color:#999;font-size:11px">('+z.zoneId+')</span></div>'+
       ['LMP','Energy','Congestion','Loss','Load','Solar BTM'].map((k,i)=>{
         const vals=[z.lmp,z.energy,z.cong,z.loss,z.load,z.btm];
-        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'];
+        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'];
         return '<div class="popup-row"><span class="popup-key">'+k+'</span><span class="popup-val">'+fmt[i](vals[i])+'</span></div>';
       }).join('')
     ).addTo(map);
@@ -339,7 +339,7 @@ function onMapReady(){
     map.on('mousemove',lid,e=>{
       const f=e.features[0];if(!f)return;
       const v=f.properties.voltage||0;
-      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Name',f.properties.name||'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ']]);
+      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'],['Name',f.properties.name||'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ']]);
       map.getCanvas().style.cursor='crosshair';
     });
     map.on('mouseleave',lid,()=>{hideTip();map.getCanvas().style.cursor='';});
@@ -347,14 +347,14 @@ function onMapReady(){
   // Hover on ext flows
   if(false) map.on('xa',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;
-    showTip(e,p.label+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Source','ISO-NE measured (5-min)']]);
+    showTip(e,p.label+' ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'],['Source','ISO-NE measured (5-min)']]);
     map.getCanvas().style.cursor='pointer';
   });
 
   // Hover on zone flows
   if(false) map.on('xb',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;const diff=Math.abs(parseFloat(p.lmpDiff));
-    showTip(e,p.fromZone+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂÃÂÃÂÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
+    showTip(e,p.fromZone+' ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
     map.getCanvas().style.cursor='pointer';
   });
 
@@ -436,7 +436,7 @@ function toggleFlows(){
   ['ext-flow-line','zone-flow-line'].forEach(id=>{if(map&&map.getLayer(id))map.setLayoutProperty(id,'visibility',flowsVisible?'visible':'none');});
 }
 
-// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Schematic ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Schematic ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 function renderSchematic(){
   const wrap=document.querySelector('.schematic-wrap');
   const svg=document.getElementById('schematic-svg');
@@ -450,7 +450,7 @@ function renderSchematic(){
   svg.style.filter='drop-shadow(0 2px 12px rgba(0,0,0,0.1))';
   svg.innerHTML='';
 
-  // Zoom/pan — fresh setup each render
+  // Zoom/pan â fresh setup each render
   wrap._schZoom = wrap._schZoom||1;
   wrap._schPX   = wrap._schPX  ||0;
   wrap._schPY   = wrap._schPY  ||0;
@@ -535,7 +535,7 @@ function renderSchematic(){
 
   const FC={'Natural Gas':'#f4511e','Nuclear':'#8e24aa','Hydro':'#1a73e8','Wind':'#43a047','Solar':'#f9a825','Oil':'#795548','Other':'#90a4ae','Wood':'#6d4c41','Refuse':'#546e7a','Landfill Gas':'#00acc1','Coal':'#616161'};
 
-  // Zone positions — larger boxes with more breathing room
+  // Zone positions â larger boxes with more breathing room
   const ZP={
     ME:  {x:740,y:70, w:210,h:150},
     NH:  {x:510,y:75, w:200,h:142},
@@ -550,7 +550,7 @@ function renderSchematic(){
   // Background
   ap(svg,el('rect',{x:0,y:0,width:VW,height:VH,fill:'#f8f9fa'}));
 
-  // ── Top bar: fuel mix ──
+  // ââ Top bar: fuel mix ââ
   const tot=state.fuelMix.reduce((s,f)=>s+(f.GenMw||0),0);
   const ftop=state.fuelMix.filter(f=>(f.GenMw||0)>30).sort((a,b)=>b.GenMw-a.GenMw).slice(0,7);
   ap(svg,el('text',{x:16,y:16,'font-size':'12','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'GENERATION MIX'));
@@ -582,10 +582,10 @@ function renderSchematic(){
     });
   }
 
-  // ── Zoom hint ──
-  ap(svg,el('text',{x:VW/2,y:59,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'Scroll to zoom · Double-click to reset'));
+  // ââ Zoom hint ââ
+  ap(svg,el('text',{x:VW/2,y:59,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'Scroll to zoom Â· Double-click to reset'));
 
-  // ── Color helper ──
+  // ââ Color helper ââ
   function lmpC(v){
     if(v===null)return{fill:'#eceff1',border:'#90a4ae',text:'#546e7a',hdr:'#90a4ae'};
     if(v<0)  return{fill:'#f3e5f5',border:'#7b1fa2',text:'#6a1b9a',hdr:'#7b1fa2'};
@@ -595,7 +595,7 @@ function renderSchematic(){
     return{fill:'#fce4ec',border:'#880e4f',text:'#880e4f',hdr:'#880e4f'};
   }
 
-  // ── Zone box ──
+  // ââ Zone box ââ
   function drawZone(zid){
     const pos=ZP[zid];if(!pos)return;
     const zs=Object.values(state.zones).find(z=>z.zoneId===zid);
@@ -617,7 +617,7 @@ function renderSchematic(){
     const zoneName=zs?zs.name:zid;
     ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+44,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#aaa'},zoneName));
 
-    // LMP — large and prominent
+    // LMP â large and prominent
     const lmpStr=lmp!==null?'$'+lmp.toFixed(2):'-';
     ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+72,'text-anchor':'middle','font-size':'24','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:text},lmpStr));
     ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+84,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'$/MWh LMP'));
@@ -634,7 +634,7 @@ function renderSchematic(){
     }
     if(zs&&zs.btm!=null&&zs.btm>0){
       ap(g,
-        el('text',{x:pos.x+pos.w-12,y:pos.y+104,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'☀ BTM SOLAR'),
+        el('text',{x:pos.x+pos.w-12,y:pos.y+104,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'â BTM SOLAR'),
         el('text',{x:pos.x+pos.w-12,y:pos.y+118,'text-anchor':'end','font-size':'13','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW')
       );
     }
@@ -657,7 +657,7 @@ function renderSchematic(){
     ap(svg,g);
   }
 
-  // ── Inter-zone flow arrow ──
+  // ââ Inter-zone flow arrow ââ
   function drawZoneFlow(fId,tId,ox){
     const fp=ZP[fId],tp=ZP[tId];if(!fp||!tp)return;
     const zsF=Object.values(state.zones).find(z=>z.zoneId===fId);
@@ -686,11 +686,11 @@ function renderSchematic(){
       el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.75'}),
       el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col,opacity:'0.9'}),
       el('rect',{x:mx-22,y:my-9,width:44,height:17,fill:'rgba(255,255,255,0.92)',rx:4}),
-      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'Δ$'+ad.toFixed(2))
+      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'Î$'+ad.toFixed(2))
     );
   }
 
-  // ── External interface arrow ──
+  // ââ External interface arrow ââ
   function drawExtFlow(key,label,ex,ey,toZid,side){
     const flow=state.flows.find(f=>f.name.toUpperCase().includes(key.toUpperCase()));
     if(!flow||Math.abs(flow.flow)<5)return;
@@ -712,7 +712,7 @@ function renderSchematic(){
       el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.9'}),
       el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col}),
       el('rect',{x:mx-34,y:my-10,width:68,height:19,fill:'rgba(255,255,255,0.93)',rx:4,stroke:col,'stroke-width':'0.8'}),
-      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'↓':'↑')+mw+'MW')
+      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'â':'â')+mw+'MW')
     );
   }
 
@@ -740,9 +740,12 @@ function renderSchematic(){
   const ts=Object.values(state.zones).find(z=>z.ts)?new Date(Object.values(state.zones).find(z=>z.ts).ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'--:--';
   ap(svg,
     el('text',{x:VW/2,y:VH-8,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#ccc'},
-      'ISO-NE Load Zones · LMP $/MWh · '+ts+' · Arrow = energy flow direction · Δ$ = price spread · ↓ = import ↑ = export')
+      'ISO-NE Load Zones Â· LMP $/MWh Â· '+ts+' Â· Arrow = energy flow direction Â· Î$ = price spread Â· â = import â = export')
   );
 }
+
+const TC='#555',GO='rgba(0,0,0,.07)';
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 function renderCharts(){
   if(!document.getElementById('panel-charts').classList.contains('active'))return;
@@ -790,7 +793,7 @@ function renderLoadSolar(){
 }
 
 function renderLmpHistory(){
-  // Placeholder ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ would need historical polling to build this
+  // Placeholder ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ would need historical polling to build this
   // Show current zone LMPs as sparklines instead
   destroyChart('lmpHist');
   const zones=Object.values(state.zones).filter(z=>z.lmp!==null);
@@ -799,26 +802,26 @@ function renderLmpHistory(){
   charts['lmpHist']=new Chart(document.getElementById('ch-lmp-history').getContext('2d'),{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{label:'LMP',data:zones.map(z=>z.lmp),backgroundColor:zones.map(z=>ZONE_COLORS[z.zoneId]||'#90a4ae'),borderRadius:5,borderSkipped:false},{label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'rgba(26,115,232,.25)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TC,font:{size:11},boxWidth:12},position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)+'/MWh'}}},scales:{x:{ticks:{color:TC},grid:{color:GO}},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO}}}}});
 }
 
-// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Table ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Table ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 function renderTable(){
   const rows=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>{
     if(state.sortField==='name')return state.sortDir*(a.name.localeCompare(b.name));
     return state.sortDir*((b[state.sortField]??-Infinity)-(a[state.sortField]??-Infinity));
   });
   ['name','lmp','load','btm','energy','cong','loss'].forEach(f=>{
-    const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'):'';
+    const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ':'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'):'';
     const th=document.getElementById('th-'+f);if(th)th.classList.toggle('sorted',f===state.sortField);
   });
   const mx=Math.max(...rows.map(r=>r.load||0));
   document.getElementById('tblBody').innerHTML=rows.map(z=>{
     const p=mx>0?((z.load||0)/mx*100).toFixed(0):0;
     return `<tr><td><span style="font-weight:500">${z.name}</span><span class="zone-id">${z.zoneId}</span></td>
-    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</span></td>
-    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
-    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
-    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
-    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
-    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
+    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</span></td>
+    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
+    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
     <td>${badgeHtml(z.lmp)}</td></tr>`;
   }).join('')||'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No data</td></tr>';
 }
@@ -832,7 +835,7 @@ function setSort(f,btn){
 }
 function toggleDir(){state.sortDir*=-1;document.getElementById('dirBtn').textContent=state.sortDir===-1?'Highest first':'Lowest first';renderTable();}
 
-// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Metrics bar ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Metrics bar ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 function updateMetrics(){
   const sl=state.sysload;
   if(sl){document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();}
@@ -841,7 +844,7 @@ function updateMetrics(){
   const net=state.flows.reduce((s,f)=>s+f.flow,0);document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
 }
 
-// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Fetch ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+// ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Fetch ÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
 async function fetchAll(bust){
   setLive('loading','Fetching...');setLdBar(10);
   const ts=bust?'?t='+Date.now():'';
