@@ -10,85 +10,102 @@
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-:root{--bg:#f5f5f5;--bg2:#ffffff;--bg3:#f0f0f0;--border:#e0e0e0;--border2:#cccccc;--text:#1a1a1a;--text2:#555555;--text3:#999999;--accent:#1a73e8;--accent-light:#e8f0fe;--green:#2e7d32;--amber:#e65100;--red:#c62828;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
+:root{--bg:#f5f5f5;--bg2:#fff;--bg3:#f0f0f0;--border:#e0e0e0;--border2:#ccc;--text:#1a1a1a;--text2:#555;--text3:#999;--accent:#1a73e8;--accent-light:#e8f0fe;--green:#2e7d32;--amber:#e65100;--red:#c62828;--mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;overflow-x:hidden}
 #app{display:flex;flex-direction:column;height:100vh}
-#header{flex-shrink:0;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg2);box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+#header{flex-shrink:0;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg2);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 #metrics-bar{flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);border-bottom:1px solid var(--border);background:var(--bg2)}
-#tab-bar{flex-shrink:0;display:flex;border-bottom:2px solid var(--border);background:var(--bg2);padding:0 20px}
+#tab-bar{flex-shrink:0;display:flex;border-bottom:2px solid var(--border);background:var(--bg2);padding:0 20px;gap:0}
 #content{flex:1;overflow:hidden;position:relative}
 .header-left{display:flex;align-items:center;gap:14px}
-.logo{font-size:15px;font-weight:600;color:var(--accent);letter-spacing:-0.01em}
-.header-divider{width:1px;height:20px;background:var(--border2)}
+.logo{font-size:15px;font-weight:600;color:var(--accent)}
+.hdr-div{width:1px;height:20px;background:var(--border2)}
 .header-sub{font-size:12px;color:var(--text3)}
-.header-right{display:flex;align-items:center;gap:12px}
+.header-right{display:flex;align-items:center;gap:10px}
 .live-indicator{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
 .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
 .live-dot.loading{background:var(--amber);animation:none}
 .live-dot.error{background:var(--red);animation:none}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.refresh-btn{font-size:12px;padding:5px 14px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;border-radius:6px;transition:all .15s}
-.refresh-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
-.metric{padding:11px 18px;border-right:1px solid var(--border)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hdr-btn{font-size:12px;padding:5px 12px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;border-radius:6px;transition:all .15s}
+.hdr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+.metric{padding:10px 16px;border-right:1px solid var(--border)}
 .metric:last-child{border-right:none}
-.metric-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px;font-weight:500}
-.metric-value{font-family:var(--mono);font-size:17px;font-weight:500;color:var(--text);line-height:1.1}
+.metric-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-weight:500}
+.metric-value{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--text);line-height:1.1}
 .metric-sub{font-size:11px;color:var(--text3);margin-top:2px}
-.tab{font-size:13px;padding:13px 18px;cursor:pointer;color:var(--text3);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s;font-weight:500}
+.tab{font-size:13px;padding:12px 16px;cursor:pointer;color:var(--text3);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s;font-weight:500;white-space:nowrap}
 .tab:hover{color:var(--text2)}
 .tab.active{color:var(--accent);border-bottom:2px solid var(--accent)}
 .panel{display:none;height:100%;overflow:auto}
 .panel.active{display:flex;flex-direction:column}
-#map{flex:1;min-height:400px}
-.map-overlay{position:absolute;bottom:36px;left:14px;background:rgba(255,255,255,0.95);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-size:11px;pointer-events:none;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.12);max-width:180px}
-.map-overlay-title{color:var(--text3);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px;font-size:10px;font-weight:600}
-.legend-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--text2);font-size:11px}
-.leg-swatch{width:11px;height:11px;border-radius:3px;flex-shrink:0}
-.leg-line{width:22px;height:3px;border-radius:1px;flex-shrink:0}
-.leg-arrow{font-size:13px;flex-shrink:0;line-height:1}
-.leg-sep{height:1px;background:var(--border);margin:7px 0}
-.maplibregl-popup-content{background:#fff!important;border:1px solid var(--border2)!important;border-radius:8px!important;padding:12px 16px!important;font-family:var(--sans)!important;min-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.15)!important}
-.popup-name{font-weight:600;font-size:13px;color:var(--text);margin-bottom:8px;padding-bottom:7px;border-bottom:1px solid var(--border)}
-.popup-row{display:flex;justify-content:space-between;gap:24px;font-size:12px;margin-bottom:4px}
-.popup-key{color:var(--text3)}
-.popup-val{color:var(--text);font-family:var(--mono);font-weight:500}
+/* MAP */
+#map{flex:1;min-height:300px}
+.map-overlay{position:absolute;bottom:32px;left:12px;background:rgba(255,255,255,.96);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;font-size:11px;pointer-events:none;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.12);max-width:170px}
+.map-ol-title{color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;font-size:10px;font-weight:600}
+.leg-row{display:flex;align-items:center;gap:7px;margin-bottom:3px;color:var(--text2);font-size:11px}
+.leg-sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.leg-ln{width:20px;height:3px;border-radius:1px;flex-shrink:0}
+.leg-dash{width:20px;height:0;border-top:2px dashed #e65100;flex-shrink:0}
+.leg-sep{height:1px;background:var(--border);margin:6px 0}
+#hover-tip{position:absolute;background:#fff;border:1px solid var(--border2);border-radius:8px;padding:9px 13px;font-size:12px;pointer-events:none;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.14);display:none;min-width:195px;max-width:245px}
+.ht-title{font-weight:600;font-size:13px;color:var(--text);margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.ht-row{display:flex;justify-content:space-between;gap:14px;margin-bottom:3px}
+.ht-key{color:var(--text3);flex-shrink:0;font-size:11px}
+.ht-val{color:var(--text);font-family:var(--mono);font-weight:500;text-align:right;font-size:11px}
+#map-status{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);border:1px solid var(--border2);border-radius:6px;padding:4px 11px;font-size:11px;color:var(--text3);z-index:10;display:none;white-space:nowrap}
+.map-controls{position:absolute;top:8px;right:50px;display:flex;gap:6px;z-index:10}
+.map-ctrl-btn{font-size:11px;padding:4px 10px;border:1px solid var(--border2);background:rgba(255,255,255,.92);color:var(--text2);cursor:pointer;border-radius:5px;transition:all .15s}
+.map-ctrl-btn:hover{background:#fff;border-color:var(--accent);color:var(--accent)}
+.map-ctrl-btn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent)}
+.maplibregl-popup-content{background:#fff!important;border:1px solid var(--border2)!important;border-radius:8px!important;padding:11px 14px!important;font-family:var(--sans)!important;min-width:190px;box-shadow:0 4px 12px rgba(0,0,0,.15)!important}
+.popup-name{font-weight:600;font-size:13px;color:var(--text);margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.popup-row{display:flex;justify-content:space-between;gap:20px;font-size:12px;margin-bottom:3px}
+.popup-key{color:var(--text3)}.popup-val{color:var(--text);font-family:var(--mono);font-weight:500}
 .maplibregl-ctrl-attrib{display:none!important}
-.table-toolbar{padding:10px 20px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;background:var(--bg2)}
-.sort-label{font-size:12px;color:var(--text3);font-weight:500}
-.sbtn{font-size:12px;padding:4px 11px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;border-radius:5px;transition:all .15s}
+/* SCHEMATIC */
+#panel-schematic{background:var(--bg)}
+.schematic-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px;overflow:auto}
+#schematic-svg{max-width:700px;width:100%;filter:drop-shadow(0 2px 8px rgba(0,0,0,.08))}
+.schematic-footer{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:11px;color:var(--text3);align-items:center}
+.schematic-leg{display:flex;align-items:center;gap:5px}
+.schematic-leg-sw{width:12px;height:12px;border-radius:2px}
+/* CHARTS */
+.charts-wrap{flex:1;overflow:auto;padding:16px;background:var(--bg);display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.chart-card.full{grid-column:1/-1}
+.chart-card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.chart-card-sub{font-size:11px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0}
+.cw{position:relative;height:180px}
+.cw-sm{position:relative;height:140px}
+.cw-lg{position:relative;height:220px}
+/* TABLE */
+.tbl-toolbar{padding:9px 18px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;background:var(--bg2)}
+.sort-lbl{font-size:12px;color:var(--text3);font-weight:500}
+.sbtn{font-size:12px;padding:4px 10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;border-radius:5px;transition:all .15s}
 .sbtn.active{background:var(--accent-light);border-color:var(--accent);color:var(--accent);font-weight:500}
-.table-wrap{flex:1;overflow:auto;padding:0 20px 20px;background:var(--bg)}
+.tbl-wrap{flex:1;overflow:auto;padding:0 18px 18px;background:var(--bg)}
 table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
-thead th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:var(--text3);border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:0.05em;position:sticky;top:0;background:var(--bg)}
+thead th{text-align:left;padding:9px 11px;font-size:11px;font-weight:600;color:var(--text3);border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;position:sticky;top:0;background:var(--bg)}
 thead th:hover{color:var(--text2)}
 thead th.sorted{color:var(--accent)}
 tbody tr{border-bottom:1px solid var(--border);background:var(--bg2)}
 tbody tr:hover{background:#f0f4ff}
-tbody td{padding:10px 12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+tbody td{padding:9px 11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .zone-id{font-family:var(--mono);font-size:11px;color:var(--text3);display:block}
 .lmp-val{font-family:var(--mono);font-weight:600}
 .lmp-neg{color:#7b1fa2}.lmp-high{color:#c62828}.lmp-mid{color:#e65100}.lmp-low{color:#2e7d32}
-.badge{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
-.badge-neg{background:#f3e5f5;color:#7b1fa2}
-.badge-high{background:#ffebee;color:#c62828}
-.badge-mid{background:#fff3e0;color:#e65100}
-.badge-low{background:#e8f5e9;color:#2e7d32}
-.bar-bg{width:56px;height:4px;background:var(--border);border-radius:2px;display:inline-block;vertical-align:middle;margin-right:6px}
+.badge{font-size:11px;padding:2px 7px;border-radius:4px;font-weight:500}
+.badge-neg{background:#f3e5f5;color:#7b1fa2}.badge-high{background:#ffebee;color:#c62828}
+.badge-mid{background:#fff3e0;color:#e65100}.badge-low{background:#e8f5e9;color:#2e7d32}
+.bar-bg{width:52px;height:4px;background:var(--border);border-radius:2px;display:inline-block;vertical-align:middle;margin-right:5px}
 .bar-fg{height:100%;border-radius:2px;background:var(--accent)}
-.charts-inner{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:18px;overflow:auto;background:var(--bg)}
-.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
-.chart-card-full{grid-column:1/-1}
-.chart-card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px}
-.chart-wrap{position:relative;height:220px}
-.chart-wrap-lg{position:relative;height:180px}
-.chart-sel{font-size:12px;padding:4px 10px;border:1px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;border-radius:5px;margin-left:8px}
 #loading{position:absolute;inset:0;background:var(--bg2);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:12px}
-.loading-text{font-size:13px;color:var(--text3);letter-spacing:0.05em}
-.loading-bar{width:180px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
-.loading-fill{height:100%;background:var(--accent);width:0;transition:width .3s;border-radius:2px}
-#map-status{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border:1px solid var(--border2);border-radius:6px;padding:5px 12px;font-size:11px;color:var(--text3);z-index:10;display:none;white-space:nowrap}
-@media(max-width:700px){#metrics-bar{grid-template-columns:repeat(3,1fr)}.metric:nth-child(4),.metric:nth-child(5){display:none}.charts-inner{grid-template-columns:1fr}.chart-card-full{grid-column:1}}
+.ld-text{font-size:13px;color:var(--text3);letter-spacing:.05em}
+.ld-bar{width:180px;height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:var(--accent);width:0;transition:width .3s;border-radius:2px}
+@media(max-width:700px){#metrics-bar{grid-template-columns:repeat(3,1fr)}.metric:nth-child(4),.metric:nth-child(5){display:none}.charts-wrap{grid-template-columns:1fr}.chart-card.full{grid-column:1}}
 </style>
 </head>
 <body>
@@ -96,52 +113,109 @@ tbody td{padding:10px 12px;color:var(--text);overflow:hidden;text-overflow:ellip
 <div id="header">
   <div class="header-left">
     <span class="logo">ISO-NE Grid Monitor</span>
-    <div class="header-divider"></div>
-    <span class="header-sub">New England Power System · Real-Time</span>
+    <div class="hdr-div"></div>
+    <span class="header-sub">New England Power System &middot; Real-Time</span>
   </div>
   <div class="header-right">
     <div class="live-indicator"><div class="live-dot loading" id="liveDot"></div><span id="liveText">Connecting...</span></div>
-    <button class="refresh-btn" onclick="fetchAll()">Refresh</button>
+    <button class="hdr-btn" onclick="clearCache()">Clear cache</button>
+    <button class="hdr-btn" onclick="fetchAll()">Refresh</button>
   </div>
 </div>
 <div id="metrics-bar">
-  <div class="metric"><div class="metric-label">System Load</div><div class="metric-value" id="m-load">—</div><div class="metric-sub">MW actual</div></div>
-  <div class="metric"><div class="metric-label">Solar Offset</div><div class="metric-value" id="m-solar">—</div><div class="metric-sub">MW behind-meter PV</div></div>
-  <div class="metric"><div class="metric-label">Hub LMP</div><div class="metric-value" id="m-lmp">—</div><div class="metric-sub">$/MWh zone avg</div></div>
-  <div class="metric"><div class="metric-label">Net Interchange</div><div class="metric-value" id="m-flow">—</div><div class="metric-sub">MW (– = import)</div></div>
-  <div class="metric"><div class="metric-label">Peak Zone</div><div class="metric-value" id="m-peak" style="font-size:14px;padding-top:2px">—</div><div class="metric-sub">highest LMP</div></div>
+  <div class="metric"><div class="metric-label">System Load</div><div class="metric-value" id="m-load">&#8212;</div><div class="metric-sub">MW actual</div></div>
+  <div class="metric"><div class="metric-label">Solar Offset</div><div class="metric-value" id="m-solar">&#8212;</div><div class="metric-sub">MW behind-meter PV</div></div>
+  <div class="metric"><div class="metric-label">Hub LMP</div><div class="metric-value" id="m-lmp">&#8212;</div><div class="metric-sub">$/MWh zone avg</div></div>
+  <div class="metric"><div class="metric-label">Net Interchange</div><div class="metric-value" id="m-flow">&#8212;</div><div class="metric-sub">MW (&minus; = import)</div></div>
+  <div class="metric"><div class="metric-label">Peak Zone</div><div class="metric-value" id="m-peak" style="font-size:13px;padding-top:2px">&#8212;</div><div class="metric-sub">highest LMP</div></div>
 </div>
 <div id="tab-bar">
   <button class="tab active" onclick="switchTab('map',this)">Map</button>
-  <button class="tab" onclick="switchTab('table',this)">Table</button>
+  <button class="tab" onclick="switchTab('schematic',this)">Schematic</button>
   <button class="tab" onclick="switchTab('charts',this)">Charts</button>
+  <button class="tab" onclick="switchTab('table',this)">Table</button>
 </div>
 <div id="content">
-  <div id="loading"><div class="loading-text">Loading live grid data</div><div class="loading-bar"><div class="loading-fill" id="loadBar"></div></div></div>
+  <div id="loading"><div class="ld-text">Loading live grid data</div><div class="ld-bar"><div class="ld-fill" id="ldBar"></div></div></div>
+
+  <!-- MAP TAB -->
   <div id="panel-map" class="panel active">
     <div id="map"></div>
     <div id="map-status"></div>
+    <div id="hover-tip"><div class="ht-title" id="ht-title"></div><div id="ht-body"></div></div>
+    <div class="map-controls">
+      <button class="map-ctrl-btn active" id="btn-transm" onclick="toggleTransm()">Transmission</button>
+      <button class="map-ctrl-btn active" id="btn-flows" onclick="toggleFlows()">Flow arrows</button>
+    </div>
     <div class="map-overlay">
-      <div class="map-overlay-title">LMP $/MWh</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#7b1fa2"></div>Negative</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#43a047"></div>$0–30 low</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#fb8c00"></div>$30–60 mid</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#e53935"></div>$60–90 high</div>
-      <div class="legend-row"><div class="leg-swatch" style="background:#880e4f"></div>&gt;$90 spike</div>
+      <div class="map-ol-title">LMP $/MWh</div>
+      <div class="leg-row"><div class="leg-sw" style="background:#7b1fa2"></div>Negative</div>
+      <div class="leg-row"><div class="leg-sw" style="background:#43a047"></div>$0&ndash;30 low</div>
+      <div class="leg-row"><div class="leg-sw" style="background:#fb8c00"></div>$30&ndash;60 mid</div>
+      <div class="leg-row"><div class="leg-sw" style="background:#e53935"></div>$60&ndash;90 high</div>
+      <div class="leg-row"><div class="leg-sw" style="background:#880e4f"></div>&gt;$90 spike</div>
       <div class="leg-sep"></div>
-      <div class="map-overlay-title">Transmission</div>
-      <div class="legend-row"><div class="leg-line" style="background:#c62828"></div>345+ kV</div>
-      <div class="legend-row"><div class="leg-line" style="background:#fb8c00"></div>115–345 kV</div>
-      <div class="legend-row"><div class="leg-line" style="background:#90a4ae"></div>&lt;115 kV</div>
+      <div class="map-ol-title">Transmission</div>
+      <div class="leg-row"><div class="leg-ln" style="background:#c62828"></div>345+ kV</div>
+      <div class="leg-row"><div class="leg-ln" style="background:#fb8c00"></div>115&ndash;345 kV</div>
+      <div class="leg-row"><div class="leg-ln" style="background:#90a4ae"></div>&lt;115 kV</div>
       <div class="leg-sep"></div>
-      <div class="map-overlay-title">Energy Flow</div>
-      <div class="legend-row"><span class="leg-arrow" style="color:#1a73e8">&#x2794;</span>External (real)</div>
-      <div class="legend-row"><span class="leg-arrow" style="color:#e65100">&#x2794;</span>Inter-zone (est.)</div>
+      <div class="map-ol-title">Energy Flow</div>
+      <div class="leg-row"><div class="leg-ln" style="background:#1a73e8"></div>External (real)</div>
+      <div class="leg-row"><div class="leg-dash"></div>Inter-zone (est.)</div>
     </div>
   </div>
+
+  <!-- SCHEMATIC TAB -->
+  <div id="panel-schematic" class="panel">
+    <div class="schematic-wrap">
+      <svg id="schematic-svg" viewBox="0 0 700 460" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="schematic-footer">
+        <span style="color:var(--text2);font-weight:500">LMP color scale:</span>
+        <div class="schematic-leg"><div class="schematic-leg-sw" style="background:#7b1fa2"></div>Negative</div>
+        <div class="schematic-leg"><div class="schematic-leg-sw" style="background:#43a047"></div>$0&ndash;30</div>
+        <div class="schematic-leg"><div class="schematic-leg-sw" style="background:#fb8c00"></div>$30&ndash;60</div>
+        <div class="schematic-leg"><div class="schematic-leg-sw" style="background:#e53935"></div>$60&ndash;90</div>
+        <div class="schematic-leg"><div class="schematic-leg-sw" style="background:#880e4f"></div>&gt;$90</div>
+        <span style="color:var(--text3);margin-left:8px">Blue arrows = import &nbsp; Red = export &nbsp; Dashed = inter-zone est.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS TAB -->
+  <div id="panel-charts" class="panel">
+    <div class="charts-wrap">
+      <div class="chart-card full">
+        <div class="chart-card-title">5-minute LMP by zone <span class="chart-card-sub">current hour &mdash; all 8 zones</span></div>
+        <div class="cw-lg"><canvas id="ch-lmp-history"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">LMP right now <span class="chart-card-sub">ranked</span></div>
+        <div class="cw"><canvas id="ch-lmp-bar"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Generation fuel mix <span class="chart-card-sub">current MW</span></div>
+        <div class="cw"><canvas id="ch-fuel"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">LMP components <span class="chart-card-sub">energy / congestion / loss</span></div>
+        <div class="cw"><canvas id="ch-components"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">External interchange <span class="chart-card-sub">MW by interface</span></div>
+        <div class="cw"><canvas id="ch-flows"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-title">Load vs solar offset <span class="chart-card-sub">MW</span></div>
+        <div class="cw"><canvas id="ch-load-solar"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE TAB -->
   <div id="panel-table" class="panel">
-    <div class="table-toolbar">
-      <span class="sort-label">Sort by:</span>
+    <div class="tbl-toolbar">
+      <span class="sort-lbl">Sort by:</span>
       <button class="sbtn active" onclick="setSort('lmp',this)">LMP</button>
       <button class="sbtn" onclick="setSort('load',this)">Load</button>
       <button class="sbtn" onclick="setSort('btm',this)">Solar BTM</button>
@@ -149,329 +223,406 @@ tbody td{padding:10px 12px;color:var(--text);overflow:hidden;text-overflow:ellip
       <button class="sbtn" onclick="setSort('name',this)">Name</button>
       <button class="sbtn active" id="dirBtn" onclick="toggleDir()">Highest first</button>
     </div>
-    <div class="table-wrap">
+    <div class="tbl-wrap">
       <table>
         <thead><tr>
           <th style="width:22%" onclick="setSort('name')" id="th-name">Zone</th>
-          <th style="width:14%" onclick="setSort('lmp')" id="th-lmp" class="sorted">LMP <span id="arr-lmp">↓</span></th>
-          <th style="width:15%" onclick="setSort('load')" id="th-load">Load MW <span id="arr-load"></span></th>
-          <th style="width:14%" onclick="setSort('btm')" id="th-btm">Solar BTM <span id="arr-btm"></span></th>
-          <th style="width:13%" onclick="setSort('energy')" id="th-energy">Energy <span id="arr-energy"></span></th>
+          <th style="width:13%" onclick="setSort('lmp')" id="th-lmp" class="sorted">LMP <span id="arr-lmp">&#8595;</span></th>
+          <th style="width:14%" onclick="setSort('load')" id="th-load">Load MW <span id="arr-load"></span></th>
+          <th style="width:13%" onclick="setSort('btm')" id="th-btm">Solar BTM <span id="arr-btm"></span></th>
+          <th style="width:12%" onclick="setSort('energy')" id="th-energy">Energy <span id="arr-energy"></span></th>
           <th style="width:12%" onclick="setSort('cong')" id="th-cong">Congestion <span id="arr-cong"></span></th>
-          <th style="width:10%">Status</th>
+          <th style="width:11%" onclick="setSort('loss')" id="th-loss">Loss <span id="arr-loss"></span></th>
+          <th style="width:13%">Status</th>
         </tr></thead>
-        <tbody id="tableBody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">Loading...</td></tr></tbody>
+        <tbody id="tblBody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">Loading...</td></tr></tbody>
       </table>
     </div>
   </div>
-  <div id="panel-charts" class="panel">
-    <div class="charts-inner">
-      <div class="chart-card chart-card-full">
-        <div class="chart-card-title">Zone data <select class="chart-sel" onchange="renderMainChart(this.value)" id="chartSel"><option value="lmp">LMP $/MWh</option><option value="load">Load MW</option><option value="btm">Solar BTM MW</option><option value="flow">External flows</option><option value="scatter">LMP vs load</option></select></div>
-        <div class="chart-wrap"><canvas id="chart1"></canvas></div>
-      </div>
-      <div class="chart-card"><div class="chart-card-title">LMP components — energy / congestion / loss</div><div class="chart-wrap-lg"><canvas id="chart2"></canvas></div></div>
-      <div class="chart-card"><div class="chart-card-title">External interchange (MW)</div><div class="chart-wrap-lg"><canvas id="chart3"></canvas></div></div>
-    </div>
-  </div>
 </div>
 </div>
+
 <script>
-const PROXY='https://isone-proxy.jsj-ai.workers.dev';
-const ZONES={
-  4001:{id:'ME', name:'Maine'},
-  4002:{id:'NH', name:'New Hampshire'},
-  4003:{id:'VT', name:'Vermont'},
-  4004:{id:'CT', name:'Connecticut'},
-  4005:{id:'RI', name:'Rhode Island'},
-  4006:{id:'SEMA',name:'SE Massachusetts'},
-  4007:{id:'WCMA',name:'WC Massachusetts'},
-  4008:{id:'NEMA',name:'NE Mass / Boston'}
+const PROXY = 'https://isone-proxy.jsj-ai.workers.dev';
+const ZONES = {
+  4001:{id:'ME',name:'Maine'},4002:{id:'NH',name:'New Hampshire'},
+  4003:{id:'VT',name:'Vermont'},4004:{id:'CT',name:'Connecticut'},
+  4005:{id:'RI',name:'Rhode Island'},4006:{id:'SEMA',name:'SE Massachusetts'},
+  4007:{id:'WCMA',name:'WC Massachusetts'},4008:{id:'NEMA',name:'NE Mass / Boston'}
 };
-const ZONE_COORDS={
-  4001:[-69.3,45.4],4002:[-71.5,43.7],4003:[-72.7,44.0],
-  4004:[-72.7,41.6],4005:[-71.5,41.7],4006:[-70.8,41.9],
-  4007:[-72.5,42.2],4008:[-71.1,42.4]
-};
+const ZONE_COORDS={4001:[-69.3,45.4],4002:[-71.5,43.7],4003:[-72.7,44.0],4004:[-72.7,41.6],4005:[-71.5,41.7],4006:[-70.8,41.9],4007:[-72.5,42.2],4008:[-71.1,42.4]};
+const ZONE_ADJ=[[4001,4002],[4003,4007],[4002,4008],[4007,4008],[4008,4006],[4008,4004],[4006,4005],[4004,4005]];
+const EXT_IFC=[{key:'SALBRYNB',lng:-73.7,lat:41.1,label:'NY Norwalk'},{key:'ROSETON',lng:-73.9,lat:41.6,label:'NY Hudson'},{key:'HQMRL',lng:-72.3,lat:45.1,label:'QC NECEC'},{key:'HQ_P1',lng:-73.1,lat:45.1,label:'QC Ph1/2'},{key:'SHOREHAM',lng:-73.2,lat:44.0,label:'NY Shoreham'}];
+const NE_CTR=[-71.5,43.0];
 
-// Adjacent zone pairs for inter-zonal flow arrows [fromId, toId, label]
-// Ordered low→high by typical flow direction under normal conditions
-const ZONE_ADJACENCY=[
-  [4003,4007,'VT→WCMA'],[4002,4008,'NH→NEMA'],[4001,4002,'ME→NH'],
-  [4007,4008,'WCMA→NEMA'],[4008,4006,'NEMA→SEMA'],[4008,4004,'NEMA→CT'],
-  [4006,4005,'SEMA→RI'],[4004,4005,'CT→RI']
+// Schematic zone layout [id, x, y, w, h, label]
+const SCH_ZONES=[
+  {id:4003,x:60,y:80,w:130,h:120,abbr:'VT',name:'Vermont'},
+  {id:4002,x:210,y:70,w:130,h:110,abbr:'NH',name:'New Hampshire'},
+  {id:4001,x:360,y:40,w:160,h:130,abbr:'ME',name:'Maine'},
+  {id:4007,x:60,y:220,w:150,h:110,abbr:'WCMA',name:'W/C Mass'},
+  {id:4008,x:230,y:200,w:150,h:110,abbr:'NEMA',name:'NE Mass/Bos'},
+  {id:4006,x:400,y:190,w:140,h:110,abbr:'SEMA',name:'SE Mass'},
+  {id:4004,x:60,y:350,w:200,h:90,abbr:'CT',name:'Connecticut'},
+  {id:4005,x:280,y:350,w:130,h:90,abbr:'RI',name:'Rhode Island'},
 ];
+// Schematic inter-zone connections [fromId, toId]
+const SCH_CONN=[[4003,4007],[4002,4008],[4001,4002],[4007,4008],[4008,4006],[4008,4004],[4006,4005],[4004,4005]];
 
-// External interface real-world endpoints [name-fragment, entryLng, entryLat, label]
-const EXT_INTERFACES=[
-  {key:'SALBRYNB', lng:-73.7, lat:41.1, label:'NY (Norwalk)'},
-  {key:'ROSETON',  lng:-73.9, lat:41.6, label:'NY (Hudson)'},
-  {key:'HQMRL',   lng:-72.5, lat:45.0, label:'QC (NECEC)'},
-  {key:'HQ_P1',   lng:-73.0, lat:45.0, label:'QC (Ph1/2)'},
-  {key:'SHOREHAM', lng:-73.2, lat:44.0, label:'NY (Shoreham)'},
-];
-// New England "center" for external arrows pointing into/out of grid
-const NE_CENTER=[-71.8,43.2];
+let state={zones:{},flows:[],sysload:null,fuelMix:[],lmpHistory:[],sortField:'lmp',sortDir:-1};
+let map=null,mapReady=false,transmVisible=true,flowsVisible=true;
+let charts={};
+let chartsInited=false;
 
-let state={zones:{},flows:[],sysload:null,sortField:'lmp',sortDir:-1};
-let map=null,mapReady=false;
-let chart1=null,chart2=null,chart3=null,chartsRendered=false;
-
-function lmpColor(v){
-  if(v===null||v===undefined)return '#90a4ae';
-  if(v<0)return '#7b1fa2';
-  if(v<30)return '#43a047';
-  if(v<60)return '#fb8c00';
-  if(v<90)return '#e53935';
-  return '#880e4f';
-}
+// ── Color helpers ──
+function lmpColor(v){if(v===null||v===undefined)return '#90a4ae';if(v<0)return '#7b1fa2';if(v<30)return '#43a047';if(v<60)return '#fb8c00';if(v<90)return '#e53935';return '#880e4f';}
+function lmpColorLight(v){if(v===null||v===undefined)return '#eceff1';if(v<0)return '#f3e5f5';if(v<30)return '#e8f5e9';if(v<60)return '#fff3e0';if(v<90)return '#ffebee';return '#fce4ec';}
 function lmpClass(v){if(v===null)return '';if(v<0)return 'lmp-neg';if(v>65)return 'lmp-high';if(v>35)return 'lmp-mid';return 'lmp-low';}
 function badgeHtml(v){if(v===null)return '';if(v<0)return '<span class="badge badge-neg">NEG</span>';if(v>65)return '<span class="badge badge-high">HIGH</span>';if(v>35)return '<span class="badge badge-mid">MID</span>';return '<span class="badge badge-low">LOW</span>';}
+function makeArc(from,to,c=0.25){const s=16,pts=[],mx=(from[0]+to[0])/2,my=(from[1]+to[1])/2,dx=to[0]-from[0],dy=to[1]-from[1],cx=mx-c*dy,cy=my+c*dx;for(let i=0;i<=s;i++){const t=i/s;pts.push([(1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0],(1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1]]);}return pts;}
 
+// ── Map init ──
 function initMap(){
   map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.4],zoom:6.8,attributionControl:false});
   map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
-  map.once('idle',()=>{
-    map.setGlyphs('https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf');
-
-    // Transmission lines
-    map.addSource('transmission',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    map.addLayer({id:'transm-low', type:'line',source:'transmission',filter:['<', ['to-number',['get','voltage']],115000],paint:{'line-color':'#90a4ae','line-width':0.7,'line-opacity':0.45}});
-    map.addLayer({id:'transm-mid', type:'line',source:'transmission',filter:['all',['>=',['to-number',['get','voltage']],115000],['<',['to-number',['get','voltage']],345000]],paint:{'line-color':'#fb8c00','line-width':['interpolate',['linear'],['zoom'],6,1,10,2.5],'line-opacity':0.7}});
-    map.addLayer({id:'transm-high',type:'line',source:'transmission',filter:['>=',['to-number',['get','voltage']],345000],paint:{'line-color':'#c62828','line-width':['interpolate',['linear'],['zoom'],6,1.5,10,3.5],'line-opacity':0.85}});
-
-    // External flow arrows (real measured data) — solid blue
-    map.addSource('ext-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    map.addLayer({id:'ext-flow-line',type:'line',source:'ext-flows',paint:{
-      'line-color':'#1a73e8','line-width':['interpolate',['linear'],['get','mwAbs'],0,2,2000,6],
-      'line-opacity':0.85,'line-dasharray':[1,0]
-    }});
-    map.addLayer({id:'ext-flow-label',type:'symbol',source:'ext-flows',layout:{
-      'symbol-placement':'line-center',
-      'text-field':['concat',['get','label'],'\n',['get','mwStr']],
-      'text-font':['Noto Sans Bold','Noto Sans Regular'],
-      'text-size':10,'text-anchor':'center','text-allow-overlap':false,
-      'text-offset':[0,-1.2]
-    },paint:{'text-color':'#1a73e8','text-halo-color':'rgba(255,255,255,0.9)','text-halo-width':2}});
-
-    // Inter-zonal flow arrows (estimated from LMP differential) — dashed orange
-    map.addSource('zone-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    map.addLayer({id:'zone-flow-line',type:'line',source:'zone-flows',paint:{
-      'line-color':['get','color'],
-      'line-width':['interpolate',['linear'],['get','strength'],0,1,100,5],
-      'line-opacity':0.75,'line-dasharray':[3,2]
-    }});
-    map.addLayer({id:'zone-flow-label',type:'symbol',source:'zone-flows',layout:{
-      'symbol-placement':'line-center',
-      'text-field':['get','diffStr'],
-      'text-font':['Noto Sans Regular','Noto Sans Regular'],
-      'text-size':9,'text-allow-overlap':false,'text-offset':[0,-0.8]
-    },paint:{'text-color':'#e65100','text-halo-color':'rgba(255,255,255,0.9)','text-halo-width':1.5}});
-
-    // Zone circles — on top
-    map.addSource('zones',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-    map.addLayer({id:'zone-fill',type:'circle',source:'zones',paint:{
-      'circle-radius':['interpolate',['linear'],['zoom'],6,20,10,38],
-      'circle-color':['get','color'],'circle-opacity':0.9,
-      'circle-stroke-width':2.5,'circle-stroke-color':'rgba(255,255,255,0.95)'
-    }});
-    map.addLayer({id:'zone-label',type:'symbol',source:'zones',layout:{
-      'text-field':['concat',['get','zoneId'],'\n',['get','lmpStr']],
-      'text-font':['Noto Sans Bold','Noto Sans Regular'],
-      'text-size':11,'text-anchor':'center',
-      'text-allow-overlap':true,'text-ignore-placement':true
-    },paint:{'text-color':'#ffffff','text-halo-color':'rgba(0,0,0,0.45)','text-halo-width':1.5}});
-
-    map.on('click','zone-fill',e=>{
-      const p=e.features[0].properties,z=state.zones[parseInt(p.locId)];
-      if(!z)return;
-      new maplibregl.Popup({closeButton:true,offset:24}).setLngLat(e.lngLat).setHTML(
-        '<div class="popup-name">'+z.name+' <span style="color:#999;font-size:11px">('+z.zoneId+')</span></div>'+
-        '<div class="popup-row"><span class="popup-key">LMP</span><span class="popup-val">'+(z.lmp!==null?'$'+z.lmp.toFixed(2)+'/MWh':'—')+'</span></div>'+
-        '<div class="popup-row"><span class="popup-key">Energy component</span><span class="popup-val">'+(z.energy!==null?'$'+z.energy.toFixed(2):'—')+'</span></div>'+
-        '<div class="popup-row"><span class="popup-key">Congestion</span><span class="popup-val">'+(z.cong!==null?'$'+z.cong.toFixed(2):'—')+'</span></div>'+
-        '<div class="popup-row"><span class="popup-key">Loss</span><span class="popup-val">'+(z.loss!==null?'$'+z.loss.toFixed(2):'—')+'</span></div>'+
-        '<div class="popup-row"><span class="popup-key">Load</span><span class="popup-val">'+(z.load!==null?Math.round(z.load).toLocaleString()+' MW':'—')+'</span></div>'+
-        '<div class="popup-row"><span class="popup-key">Solar BTM</span><span class="popup-val">'+(z.btm!==null?Math.round(z.btm).toLocaleString()+' MW':'—')+'</span></div>'
-      ).addTo(map);
-    });
-    map.on('mouseenter','zone-fill',()=>map.getCanvas().style.cursor='pointer');
-    map.on('mouseleave','zone-fill',()=>map.getCanvas().style.cursor='');
-
-    mapReady=true;
-    updateMap();
-    loadTransmissionLines();
+  waitForMap().then(onMapReady);
+}
+function waitForMap(){
+  return new Promise(resolve=>{
+    function check(){if(map.isStyleLoaded()){resolve();}else{setTimeout(check,100);}}
+    check();
   });
 }
+function onMapReady(){
+  mapReady=true;
+  console.log('Map ready');
+  // Transmission (loads async separately)
+  map.addSource('transmission',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'transm-low',type:'line',source:'transmission',filter:['<',['to-number',['get','voltage']],115000],paint:{'line-color':'#90a4ae','line-width':0.7,'line-opacity':0.4}});
+  map.addLayer({id:'transm-mid',type:'line',source:'transmission',filter:['all',['>=',['to-number',['get','voltage']],115000],['<',['to-number',['get','voltage']],345000]],paint:{'line-color':'#fb8c00','line-width':['interpolate',['linear'],['zoom'],6,1,10,2.5],'line-opacity':0.65}});
+  map.addLayer({id:'transm-high',type:'line',source:'transmission',filter:['>=',['to-number',['get','voltage']],345000],paint:{'line-color':'#c62828','line-width':['interpolate',['linear'],['zoom'],6,1.5,10,3.5],'line-opacity':0.85}});
+  // External flows
+  map.addSource('ext-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'ext-flow-line',type:'line',source:'ext-flows',paint:{'line-color':'#1a73e8','line-width':['interpolate',['linear'],['get','mwAbs'],0,2,2000,7],'line-opacity':0.9}});
+  // Zone flows
+  map.addSource('zone-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'zone-flow-line',type:'line',source:'zone-flows',paint:{'line-color':['get','lineColor'],'line-width':['interpolate',['linear'],['get','strength'],0,1.5,60,5],'line-opacity':0.8,'line-dasharray':[4,2]}});
+  // Zones
+  map.addSource('zones',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+  map.addLayer({id:'zone-fill',type:'circle',source:'zones',paint:{'circle-radius':['interpolate',['linear'],['zoom'],6,20,10,38],'circle-color':['get','color'],'circle-opacity':0.9,'circle-stroke-width':2.5,'circle-stroke-color':'rgba(255,255,255,.95)'}});
+  map.addLayer({id:'zone-label',type:'symbol',source:'zones',layout:{'text-field':['concat',['get','zoneId'],'\n',['get','lmpStr']],'text-font':['Noto Sans Bold','Noto Sans Regular'],'text-size':11,'text-anchor':'center','text-allow-overlap':true,'text-ignore-placement':true},paint:{'text-color':'#ffffff','text-halo-color':'rgba(0,0,0,.45)','text-halo-width':1.5}});
 
-// Build a curved arc between two lon/lat points for flow arrows
-function makeArc(from, to, curvature=0.3){
-  const steps=12;
-  const coords=[];
-  const mx=(from[0]+to[0])/2, my=(from[1]+to[1])/2;
-  const dx=to[0]-from[0], dy=to[1]-from[1];
-  const cx=mx-curvature*dy, cy=my+curvature*dx;
-  for(let i=0;i<=steps;i++){
-    const t=i/steps;
-    const x=(1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0];
-    const y=(1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1];
-    coords.push([x,y]);
-  }
-  return coords;
+  // Click popup
+  map.on('click','zone-fill',e=>{
+    const p=e.features[0].properties,z=state.zones[parseInt(p.locId)];if(!z)return;
+    new maplibregl.Popup({closeButton:true,offset:24}).setLngLat(e.lngLat).setHTML(
+      '<div class="popup-name">'+z.name+' <span style="color:#999;font-size:11px">('+z.zoneId+')</span></div>'+
+      ['LMP','Energy','Congestion','Loss','Load','Solar BTM'].map((k,i)=>{
+        const vals=[z.lmp,z.energy,z.cong,z.loss,z.load,z.btm];
+        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'—',v=>v!==null?'$'+v.toFixed(2):'—',v=>v!==null?'$'+v.toFixed(2):'—',v=>v!==null?'$'+v.toFixed(2):'—',v=>v!==null?Math.round(v).toLocaleString()+' MW':'—',v=>v!==null?Math.round(v).toLocaleString()+' MW':'—'];
+        return '<div class="popup-row"><span class="popup-key">'+k+'</span><span class="popup-val">'+fmt[i](vals[i])+'</span></div>';
+      }).join('')
+    ).addTo(map);
+  });
+
+  // Hover on transmission
+  ['transm-high','transm-mid','transm-low'].forEach(lid=>{
+    map.on('mousemove',lid,e=>{
+      const f=e.features[0];if(!f)return;
+      const v=f.properties.voltage||0;
+      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115–345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'—'],['Name',f.properties.name||'—']]);
+      map.getCanvas().style.cursor='crosshair';
+    });
+    map.on('mouseleave',lid,()=>{hideTip();map.getCanvas().style.cursor='';});
+  });
+  // Hover on ext flows
+  map.on('mousemove','ext-flow-line',e=>{
+    const f=e.features[0];if(!f)return;const p=f.properties;
+    showTip(e,p.label+' — External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'↓ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'—'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'—'],['Source','ISO-NE measured (5-min)']]);
+    map.getCanvas().style.cursor='pointer';
+  });
+  map.on('mouseleave','ext-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
+  // Hover on zone flows
+  map.on('mousemove','zone-flow-line',e=>{
+    const f=e.features[0];if(!f)return;const p=f.properties;const diff=Math.abs(parseFloat(p.lmpDiff));
+    showTip(e,p.fromZone+' → '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','Δ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
+    map.getCanvas().style.cursor='pointer';
+  });
+  map.on('mouseleave','zone-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
+  map.on('mouseenter','zone-fill',()=>map.getCanvas().style.cursor='pointer');
+  map.on('mouseleave','zone-fill',()=>map.getCanvas().style.cursor='');
+
+  // Update map with current state
+  updateMap();
+  // Load transmission in background (non-blocking)
+  loadTransmission();
+  document.getElementById('loading').style.display='none';
 }
+
+function showTip(e,title,rows){
+  const tip=document.getElementById('hover-tip');
+  document.getElementById('ht-title').textContent=title;
+  document.getElementById('ht-body').innerHTML=rows.map(([k,v])=>`<div class="ht-row"><span class="ht-key">${k}</span><span class="ht-val">${v}</span></div>`).join('');
+  const rect=document.getElementById('map').getBoundingClientRect();
+  let lx=e.originalEvent.clientX-rect.left+14,ly=e.originalEvent.clientY-rect.top+14;
+  if(lx+255>rect.width)lx=e.originalEvent.clientX-rect.left-258;
+  tip.style.left=lx+'px';tip.style.top=ly+'px';tip.style.display='block';
+}
+function hideTip(){document.getElementById('hover-tip').style.display='none';}
 
 function updateMap(){
   if(!mapReady)return;
-
   // Zone circles
-  const zoneFeatures=Object.values(state.zones).map(z=>{
-    const coords=ZONE_COORDS[z.locId]||[-71.8,42.4];
-    return{type:'Feature',geometry:{type:'Point',coordinates:coords},
-      properties:{locId:z.locId,zoneId:z.zoneId,color:lmpColor(z.lmp),
-        lmpStr:z.lmp!==null?'$'+z.lmp.toFixed(1):'-',name:z.name}};
-  });
-  map.getSource('zones').setData({type:'FeatureCollection',features:zoneFeatures});
-
-  // External flow arrows — solid blue arcs from border entry to NE center
-  const extFeatures=[];
-  for(const ifc of EXT_INTERFACES){
+  map.getSource('zones').setData({type:'FeatureCollection',features:Object.values(state.zones).map(z=>{
+    const c=ZONE_COORDS[z.locId]||[-71.8,42.4];
+    return{type:'Feature',geometry:{type:'Point',coordinates:c},properties:{locId:z.locId,zoneId:z.zoneId,color:lmpColor(z.lmp),lmpStr:z.lmp!==null?'$'+z.lmp.toFixed(1):'-',name:z.name}};
+  })});
+  // External flows
+  const extF=[];
+  for(const ifc of EXT_IFC){
     const flow=state.flows.find(f=>f.name.toUpperCase().includes(ifc.key.toUpperCase()));
     if(!flow||Math.abs(flow.flow)<5)continue;
-    const mw=flow.flow;
-    // negative = importing INTO NE → arrow from border to center
-    // positive = exporting OUT of NE → arrow from center to border
-    const from=mw<0?[ifc.lng,ifc.lat]:NE_CENTER;
-    const to=  mw<0?NE_CENTER:[ifc.lng,ifc.lat];
-    const coords=makeArc(from,to,0.15);
-    extFeatures.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},
-      properties:{label:ifc.label,mwAbs:Math.abs(mw),mwStr:(mw<0?'↓ ':'+')+(Math.round(Math.abs(mw)))+' MW',
-        importing:mw<0}});
+    const imp=flow.flow<0;
+    extF.push({type:'Feature',geometry:{type:'LineString',coordinates:makeArc(imp?[ifc.lng,ifc.lat]:NE_CTR,imp?NE_CTR:[ifc.lng,ifc.lat],0.2)},properties:{label:ifc.label,mwAbs:Math.abs(flow.flow),importing:imp,importLimit:flow.importLimit||0,exportLimit:flow.exportLimit||0}});
   }
-  map.getSource('ext-flows').setData({type:'FeatureCollection',features:extFeatures});
-
-  // Inter-zonal flow arrows — dashed orange, derived from LMP differential
-  const zoneFlowFeatures=[];
-  for(const [fromId,toId,label] of ZONE_ADJACENCY){
-    const zFrom=state.zones[fromId], zTo=state.zones[toId];
-    if(!zFrom||!zTo||zFrom.lmp===null||zTo.lmp===null)continue;
-    const diff=zTo.lmp-zFrom.lmp; // positive = price higher at destination = flow from→to
-    const absDiff=Math.abs(diff);
-    if(absDiff<0.5)continue; // ignore negligible differentials
-    // If diff>0 flow goes from→to (normal), if diff<0 flow goes to→from (reversed)
-    const actualFrom=diff>0?ZONE_COORDS[fromId]:ZONE_COORDS[toId];
-    const actualTo=  diff>0?ZONE_COORDS[toId]:ZONE_COORDS[fromId];
-    const coords=makeArc(actualFrom,actualTo,0.2);
-    // Color by congestion: high differential = constrained (red-orange), low = normal (blue-green)
-    const color=absDiff>20?'#e53935':absDiff>5?'#e65100':'#1a73e8';
-    zoneFlowFeatures.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},
-      properties:{label,strength:Math.min(absDiff,100),diffStr:'Δ$'+absDiff.toFixed(1),color,
-        fromZone:diff>0?ZONES[fromId]?.id:ZONES[toId]?.id,
-        toZone:diff>0?ZONES[toId]?.id:ZONES[fromId]?.id}});
+  map.getSource('ext-flows').setData({type:'FeatureCollection',features:extF});
+  // Zone flows from LMP diff
+  const zoneF=[];
+  for(const [aId,bId] of ZONE_ADJ){
+    const zA=state.zones[aId],zB=state.zones[bId];
+    if(!zA||!zB||zA.lmp===null||zB.lmp===null)continue;
+    const diff=zB.lmp-zA.lmp;if(Math.abs(diff)<0.3)continue;
+    const fromC=diff>0?ZONE_COORDS[aId]:ZONE_COORDS[bId],toC=diff>0?ZONE_COORDS[bId]:ZONE_COORDS[aId];
+    const fZ=diff>0?ZONES[aId]?.id:ZONES[bId]?.id,tZ=diff>0?ZONES[bId]?.id:ZONES[aId]?.id;
+    const ad=Math.abs(diff);
+    zoneF.push({type:'Feature',geometry:{type:'LineString',coordinates:makeArc(fromC,toC,0.22)},properties:{fromZone:fZ,toZone:tZ,lmpFrom:diff>0?zA.lmp:zB.lmp,lmpTo:diff>0?zB.lmp:zA.lmp,lmpDiff:diff,strength:Math.min(ad,60),lineColor:ad>20?'#e53935':ad>8?'#e65100':'#1a73e8'}});
   }
-  map.getSource('zone-flows').setData({type:'FeatureCollection',features:zoneFlowFeatures});
+  map.getSource('zone-flows').setData({type:'FeatureCollection',features:zoneF});
 }
 
-async function loadTransmissionLines(){
-  showStatus('Loading transmission lines...');
+async function loadTransmission(){
+  showMapStatus('Loading transmission lines...');
   const bbox='41.0,-73.8,47.5,-66.8';
-  const query='[out:json][timeout:30];(way["power"="line"]["voltage"]('+bbox+'););out geom;';
+  const q='[out:json][timeout:30];(way["power"="line"]["voltage"]('+bbox+'););out geom;';
+  const ts='&t='+Math.floor(Date.now()/300000); // 5-min cache key
   const mirrors=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass.openstreetmap.fr/api/interpreter'];
   let data=null;
   for(const url of mirrors){
-    try{const r=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(query)});if(r.ok){data=await r.json();break;}}catch(e){continue;}
+    try{const r=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(q)});if(r.ok){data=await r.json();break;}}catch(e){continue;}
   }
-  if(!data||!data.elements?.length){showStatus('Transmission data unavailable',3000);return;}
-  const features=[];
-  for(const way of data.elements){
-    if(!way.geometry||way.geometry.length<2)continue;
-    const coords=way.geometry.map(pt=>[pt.lon,pt.lat]);
-    const voltage=parseInt((way.tags?.voltage||'0').split(';')[0])||0;
-    features.push({type:'Feature',geometry:{type:'LineString',coordinates:coords},properties:{voltage,name:way.tags?.name||'',operator:way.tags?.operator||''}});
+  if(!data||!data.elements?.length){showMapStatus('Transmission unavailable',4000);return;}
+  const features=data.elements.filter(w=>w.geometry?.length>=2).map(w=>({type:'Feature',geometry:{type:'LineString',coordinates:w.geometry.map(p=>[p.lon,p.lat])},properties:{voltage:parseInt((w.tags?.voltage||'0').split(';')[0])||0,name:w.tags?.name||'',operator:w.tags?.operator||''}}));
+  if(map.getSource('transmission'))map.getSource('transmission').setData({type:'FeatureCollection',features});
+  showMapStatus(features.length.toLocaleString()+' transmission segments',3000);
+}
+
+function showMapStatus(msg,hide){const el=document.getElementById('map-status');el.textContent=msg;el.style.display='block';if(hide)setTimeout(()=>el.style.display='none',hide);}
+
+function toggleTransm(){
+  transmVisible=!transmVisible;
+  document.getElementById('btn-transm').classList.toggle('active',transmVisible);
+  ['transm-low','transm-mid','transm-high'].forEach(id=>{if(map&&map.getLayer(id))map.setLayoutProperty(id,'visibility',transmVisible?'visible':'none');});
+}
+function toggleFlows(){
+  flowsVisible=!flowsVisible;
+  document.getElementById('btn-flows').classList.toggle('active',flowsVisible);
+  ['ext-flow-line','zone-flow-line'].forEach(id=>{if(map&&map.getLayer(id))map.setLayoutProperty(id,'visibility',flowsVisible?'visible':'none');});
+}
+
+// ── Schematic ──
+function renderSchematic(){
+  const svg=document.getElementById('schematic-svg');
+  svg.innerHTML='';
+  const NS='http://www.w3.org/2000/svg';
+  function el(tag,attrs,txt){
+    const e=document.createElementNS(NS,tag);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    if(txt!==undefined)e.textContent=txt;
+    return e;
   }
-  map.getSource('transmission').setData({type:'FeatureCollection',features});
-  showStatus(features.length.toLocaleString()+' transmission segments loaded',3000);
+
+  // Background
+  svg.appendChild(el('rect',{x:0,y:0,width:700,height:460,fill:'#f8f9fa',rx:0}));
+
+  // Zone connections (draw first, behind zones)
+  for(const [aId,bId] of SCH_CONN){
+    const zA=SCH_ZONES.find(z=>z.id===aId),zB=SCH_ZONES.find(z=>z.id===bId);
+    if(!zA||!zB)continue;
+    const ax=zA.x+zA.w/2,ay=zA.y+zA.h/2,bx=zB.x+zB.w/2,by=zB.y+zB.h/2;
+    const stateA=state.zones[aId],stateB=state.zones[bId];
+    let strokeColor='#ccc',strokeW=1.5,dash='';
+    if(stateA&&stateB&&stateA.lmp!==null&&stateB.lmp!==null){
+      const diff=Math.abs(stateA.lmp-stateB.lmp);
+      if(diff>20){strokeColor='#e53935';strokeW=2.5;}
+      else if(diff>8){strokeColor='#fb8c00';strokeW=2;}
+      else{strokeColor='#1a73e8';strokeW=1.5;}
+      dash=diff>5?'':'4,3';
+      // Arrow direction
+      const fromZ=stateA.lmp<stateB.lmp?zA:zB;
+      const toZ=stateA.lmp<stateB.lmp?zB:zA;
+      const fx=fromZ.x+fromZ.w/2,fy=fromZ.y+fromZ.h/2,tx=toZ.x+toZ.w/2,ty=toZ.y+toZ.h/2;
+      const arrowId='arr'+aId+'_'+bId;
+      const marker=el('marker',{id:arrowId,markerWidth:'6',markerHeight:'6',refX:'3',refY:'3',orient:'auto'});
+      const path=el('path',{d:'M0,0 L6,3 L0,6 Z',fill:strokeColor});
+      marker.appendChild(path);
+      const defs=svg.querySelector('defs')||svg.appendChild(el('defs',{}));
+      defs.appendChild(marker);
+      const line=el('line',{x1:fx,y1:fy,x2:tx,y2:ty,stroke:strokeColor,'stroke-width':strokeW,'stroke-dasharray':dash,'marker-end':'url(#'+arrowId+')'});
+      svg.appendChild(line);
+    } else {
+      svg.appendChild(el('line',{x1:ax,y1:ay,x2:bx,y2:by,stroke:'#ddd','stroke-width':1.5}));
+    }
+  }
+
+  // External interface arrows
+  const extArrows=[
+    {label:'NY',x:10,y:300,tx:60,ty:300,key:'ROSETON'},
+    {label:'NY',x:10,y:370,tx:60,ty:370,key:'SALBRYNB'},
+    {label:'QC',x:100,y:10,tx:100,ty:80,key:'HQMRL'},
+    {label:'NB',x:500,y:10,tx:500,ty:40,key:'HQ_P1'},
+  ];
+  for(const arr of extArrows){
+    const flow=state.flows.find(f=>f.name.toUpperCase().includes(arr.key.toUpperCase()));
+    if(!flow||Math.abs(flow.flow)<5)continue;
+    const imp=flow.flow<0;
+    const fx=imp?arr.x:arr.tx,fy=imp?arr.y:arr.ty,tx=imp?arr.tx:arr.x,ty=imp?arr.ty:arr.y;
+    const color=imp?'#1a73e8':'#e53935';
+    const mw=Math.abs(Math.round(flow.flow));
+    const arrId='ext_'+arr.key;
+    const defs=svg.querySelector('defs')||svg.appendChild(el('defs',{}));
+    const marker=el('marker',{id:arrId,markerWidth:'6',markerHeight:'6',refX:'3',refY:'3',orient:'auto'});
+    marker.appendChild(el('path',{d:'M0,0 L6,3 L0,6 Z',fill:color}));
+    defs.appendChild(marker);
+    svg.appendChild(el('line',{x1:fx,y1:fy,x2:tx,y2:ty,stroke:color,'stroke-width':3,'marker-end':'url(#'+arrId+')'}));
+    svg.appendChild(el('text',{x:(fx+tx)/2+4,y:(fy+ty)/2-4,'font-size':'10','font-family':'JetBrains Mono,monospace',fill:color,'font-weight':'500'},arr.label+' '+mw+'MW'));
+  }
+
+  // Zone boxes
+  for(const zdef of SCH_ZONES){
+    const zs=state.zones[zdef.id];
+    const lmp=zs?zs.lmp:null;
+    const fillColor=lmpColorLight(lmp);
+    const borderColor=lmpColor(lmp);
+    const textColor=lmp!==null&&lmp<0?'#7b1fa2':lmp!==null&&lmp>65?'#c62828':lmp!==null&&lmp>35?'#e65100':'#2e7d32';
+
+    // Box
+    svg.appendChild(el('rect',{x:zdef.x,y:zdef.y,width:zdef.w,height:zdef.h,fill:fillColor,stroke:borderColor,'stroke-width':2,rx:8}));
+
+    // Zone abbr
+    svg.appendChild(el('text',{x:zdef.x+zdef.w/2,y:zdef.y+zdef.h/2-18,'text-anchor':'middle','font-size':'15','font-family':'Inter,sans-serif','font-weight':'600',fill:'#333'},zdef.abbr));
+
+    // LMP
+    const lmpStr=lmp!==null?'$'+lmp.toFixed(2):'-';
+    svg.appendChild(el('text',{x:zdef.x+zdef.w/2,y:zdef.y+zdef.h/2+2,'text-anchor':'middle','font-size':'13','font-family':'JetBrains Mono,monospace','font-weight':'500',fill:textColor},lmpStr));
+
+    // Load
+    if(zs&&zs.load!==null){
+      svg.appendChild(el('text',{x:zdef.x+zdef.w/2,y:zdef.y+zdef.h/2+18,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#888'},Math.round(zs.load).toLocaleString()+' MW'));
+    }
+
+    // BTM solar badge
+    if(zs&&zs.btm!==null&&zs.btm>200){
+      svg.appendChild(el('text',{x:zdef.x+zdef.w-6,y:zdef.y+14,'text-anchor':'end','font-size':'9','font-family':'Inter,sans-serif',fill:'#43a047'},'\u2600 '+Math.round(zs.btm)));
+    }
+  }
+
+  // Title + timestamp
+  const ts=Object.values(state.zones).find(z=>z.ts)?.ts;
+  const tStr=ts?new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'--:--';
+  svg.appendChild(el('text',{x:350,y:440,'text-anchor':'middle','font-size':'11','font-family':'Inter,sans-serif',fill:'#aaa'},'ISO-NE Load Zone Schematic \u00b7 LMP in $/MWh \u00b7 Updated '+tStr));
+
+  // System total
+  if(state.sysload){
+    const sl=state.sysload;
+    const loadMw=Math.round(sl.LoadMw||0).toLocaleString();
+    svg.appendChild(el('text',{x:12,y:450,'text-anchor':'start','font-size':'10','font-family':'JetBrains Mono,monospace',fill:'#888'},'Sys load: '+loadMw+' MW'));
+    const netFlow=Math.round(state.flows.reduce((s,f)=>s+f.flow,0));
+    svg.appendChild(el('text',{x:688,y:450,'text-anchor':'end','font-size':'10','font-family':'JetBrains Mono,monospace',fill:'#888'},'Net int: '+(netFlow>=0?'+':'')+netFlow+' MW'));
+  }
 }
 
-function showStatus(msg,hideAfter){
-  const el=document.getElementById('map-status');
-  el.textContent=msg;el.style.display='block';
-  if(hideAfter)setTimeout(()=>el.style.display='none',hideAfter);
+// ── Charts ──
+const TC='#555',GO='rgba(0,0,0,.07)';
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
+function renderCharts(){
+  if(!document.getElementById('panel-charts').classList.contains('active'))return;
+  renderLmpBar();
+  renderComponents();
+  renderFlowChart();
+  renderFuelMix();
+  renderLoadSolar();
+  chartsInited=true;
 }
 
-async function fetchAll(){
-  setLive('loading','Fetching...');setLoadBar(10);
-  try{
-    const [lmpR,loadR,flowR,zonalR]=await Promise.allSettled([
-      fetch(PROXY+'/fiveminutelmp/current/locationType/LOAD%20ZONE').then(r=>r.json()),
-      fetch(PROXY+'/fiveminutesystemload/current').then(r=>r.json()),
-      fetch(PROXY+'/fiveminuteexternalflow/current').then(r=>r.json()),
-      fetch(PROXY+'/fiveminuteestimatedzonalload/current').then(r=>r.json())
-    ]);
-    setLoadBar(60);
-    const lmps=(lmpR.value?.FiveMinLmps?.FiveMinLmp||[]);
-    const lmpMap={};lmps.forEach(z=>{lmpMap[z.Location['@LocId']]=z;});
-    const zonalArr=(zonalR.value?.isone_web_services?.five_min_estimated_zonal_loads?.five_min_estimated_zonal_load||[]);
-    const zonalMap={};zonalArr.forEach(z=>{zonalMap[z.load_zone_id]=z;});
-    state.zones={};
-    Object.entries(ZONES).forEach(([id,meta])=>{
-      const lmp=lmpMap[id],zl=zonalMap[parseInt(id)];
-      state.zones[parseInt(id)]={locId:parseInt(id),zoneId:meta.id,name:meta.name,
-        lmp:lmp?lmp.LmpTotal:null,energy:lmp?lmp.EnergyComponent:null,
-        cong:lmp?lmp.CongestionComponent:null,loss:lmp?lmp.LossComponent:null,
-        load:zl?zl.estimated_load_mw:null,btm:zl?zl.estimated_btm_pv_mw:null,
-        ts:lmp?lmp.BeginDate:null};
-    });
-    const sl=loadR.value?.FiveMinSystemLoad;
-    state.sysload=Array.isArray(sl)?sl[0]:sl||null;
-    state.flows=(flowR.value?.ExternalFlows?.ExternalFlow||[]).map(f=>({
-      name:(f.Location?.['\$']||'').replace('.I.',''),flow:f.ActualFlow||0}));
-    setLoadBar(90);
-    updateMetrics();
-    if(mapReady)updateMap();
-    renderTable();
-    if(chartsRendered){renderMainChart(document.getElementById('chartSel').value);renderComponentChart();renderFlowChart();}
-    setLoadBar(100);
-    const ts=Object.values(state.zones).find(z=>z.ts)?.ts;
-    const t=ts?new Date(ts):new Date();
-    setLive('live','Live · '+t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
-    document.getElementById('loading').style.display='none';
-  }catch(e){setLive('error','Error');console.error(e);}
+function renderLmpBar(){
+  destroyChart('lmpBar');
+  const zones=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>b.lmp-a.lmp);
+  charts['lmpBar']=new Chart(document.getElementById('ch-lmp-bar').getContext('2d'),{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{data:zones.map(z=>z.lmp),backgroundColor:zones.map(z=>lmpColor(z.lmp)),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toFixed(2)+'/MWh'}}},scales:{x:{ticks:{color:TC},grid:{color:GO}},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO}}}}});
 }
 
-function setLive(type,msg){const dot=document.getElementById('liveDot');dot.className='live-dot'+(type==='loading'?' loading':type==='error'?' error':'');document.getElementById('liveText').textContent=msg;}
-function setLoadBar(p){document.getElementById('loadBar').style.width=p+'%';}
-
-function updateMetrics(){
-  const sl=state.sysload;
-  if(sl){document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();}
-  const zArr=Object.values(state.zones).filter(z=>z.lmp!==null);
-  if(zArr.length){const avg=zArr.reduce((s,z)=>s+z.lmp,0)/zArr.length;document.getElementById('m-lmp').textContent='$'+avg.toFixed(2);const pk=zArr.reduce((a,b)=>a.lmp>b.lmp?a:b);document.getElementById('m-peak').textContent=pk.zoneId+' $'+pk.lmp.toFixed(0);}
-  const net=state.flows.reduce((s,f)=>s+f.flow,0);document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
+function renderComponents(){
+  destroyChart('comp');
+  const zones=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>b.lmp-a.lmp);
+  charts['comp']=new Chart(document.getElementById('ch-components').getContext('2d'),{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'#1a73e8',stack:'s',borderSkipped:false},{label:'Congestion',data:zones.map(z=>z.cong||0),backgroundColor:'#e53935',stack:'s',borderSkipped:false},{label:'Loss',data:zones.map(z=>z.loss||0),backgroundColor:'#90a4ae',stack:'s',borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)}}},scales:{x:{ticks:{color:TC},grid:{color:GO},stacked:true},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO},stacked:true}}}});
 }
 
+function renderFlowChart(){
+  destroyChart('flows');
+  const fl=state.flows.filter(f=>Math.abs(f.flow)>0.5);
+  charts['flows']=new Chart(document.getElementById('ch-flows').getContext('2d'),{type:'bar',data:{labels:fl.map(f=>f.name.replace('.I.','').replace(/ \d+$/,'').substring(0,14)),datasets:[{data:fl.map(f=>f.flow),backgroundColor:fl.map(f=>f.flow<0?'#1a73e8':'#e53935'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.parsed.x>0?'+':'')+c.parsed.x.toFixed(1)+' MW'}}},scales:{x:{ticks:{color:TC,callback:v=>(v>0?'+':'')+v},grid:{color:GO}},y:{ticks:{color:TC},grid:{color:GO}}}}});
+}
+
+function renderFuelMix(){
+  destroyChart('fuel');
+  if(!state.fuelMix.length)return;
+  const top=state.fuelMix.filter(f=>f.GenMw>10).sort((a,b)=>b.GenMw-a.GenMw);
+  const FUEL_COLORS={'Natural Gas':'#f4511e','Nuclear':'#8e24aa','Hydro':'#1a73e8','Wind':'#43a047','Solar':'#f9a825','Oil':'#795548','Coal':'#616161','Other Renewable':'#00897b','Other':'#90a4ae','Wood':'#6d4c41','Refuse':'#546e7a','Landfill Gas':'#00acc1'};
+  charts['fuel']=new Chart(document.getElementById('ch-fuel').getContext('2d'),{type:'doughnut',data:{labels:top.map(f=>f.FuelCategory||f.FuelCategoryRollup||'Other'),datasets:[{data:top.map(f=>Math.round(f.GenMw)),backgroundColor:top.map(f=>FUEL_COLORS[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae'),borderWidth:2,borderColor:'#fff'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:12,padding:8,color:TC}},tooltip:{callbacks:{label:c=>c.label+': '+c.parsed.toLocaleString()+' MW'}}}}});
+}
+
+function renderLoadSolar(){
+  destroyChart('loadSolar');
+  const sl=state.sysload;if(!sl)return;
+  const load=Math.round(sl.LoadMw||0);
+  const solar=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0));
+  const native=Math.round(sl.NativeLoad||0);
+  charts['loadSolar']=new Chart(document.getElementById('ch-load-solar').getContext('2d'),{type:'bar',data:{labels:['Metered load','Solar offset','Native load'],datasets:[{data:[load,solar,native],backgroundColor:['#1a73e8','#43a047','#fb8c00'],borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y.toLocaleString()+' MW'}}},scales:{x:{ticks:{color:TC},grid:{color:GO}},y:{ticks:{color:TC,callback:v=>v.toLocaleString()},grid:{color:GO}}}}});
+}
+
+function renderLmpHistory(){
+  // Placeholder — would need historical polling to build this
+  // Show current zone LMPs as sparklines instead
+  destroyChart('lmpHist');
+  const zones=Object.values(state.zones).filter(z=>z.lmp!==null);
+  const ZONE_COLORS={'ME':'#e53935','NH':'#1a73e8','VT':'#43a047','CT':'#fb8c00','RI':'#8e24aa','SEMA':'#00897b','WCMA':'#f4511e','NEMA':'#6d4c41'};
+  // Since we don't have history, show a bar for now
+  charts['lmpHist']=new Chart(document.getElementById('ch-lmp-history').getContext('2d'),{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{label:'LMP',data:zones.map(z=>z.lmp),backgroundColor:zones.map(z=>ZONE_COLORS[z.zoneId]||'#90a4ae'),borderRadius:5,borderSkipped:false},{label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'rgba(26,115,232,.25)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TC,font:{size:11},boxWidth:12},position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)+'/MWh'}}},scales:{x:{ticks:{color:TC},grid:{color:GO}},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO}}}}});
+}
+
+// ── Table ──
 function renderTable(){
   const rows=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>{
     if(state.sortField==='name')return state.sortDir*(a.name.localeCompare(b.name));
-    const av=a[state.sortField]??-Infinity,bv=b[state.sortField]??-Infinity;
-    return state.sortDir*(bv-av);
+    return state.sortDir*((b[state.sortField]??-Infinity)-(a[state.sortField]??-Infinity));
   });
-  ['name','lmp','load','btm','energy','cong'].forEach(f=>{
+  ['name','lmp','load','btm','energy','cong','loss'].forEach(f=>{
     const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'↓':'↑'):'';
     const th=document.getElementById('th-'+f);if(th)th.classList.toggle('sorted',f===state.sortField);
   });
   const mx=Math.max(...rows.map(r=>r.load||0));
-  document.getElementById('tableBody').innerHTML=rows.map(z=>{
+  document.getElementById('tblBody').innerHTML=rows.map(z=>{
     const p=mx>0?((z.load||0)/mx*100).toFixed(0):0;
-    return '<tr><td><span style="font-weight:500">'+z.name+'</span><span class="zone-id">'+z.zoneId+'</span></td>'+
-      '<td><span class="lmp-val '+lmpClass(z.lmp)+'">'+(z.lmp!==null?'$'+z.lmp.toFixed(2):'—')+'</span></td>'+
-      '<td><div class="bar-bg"><div class="bar-fg" style="width:'+p+'%"></div></div>'+(z.load!==null?Math.round(z.load).toLocaleString():'—')+'</td>'+
-      '<td>'+(z.btm!==null?Math.round(z.btm).toLocaleString():'—')+'</td>'+
-      '<td style="font-family:var(--mono)">'+(z.energy!==null?'$'+z.energy.toFixed(2):'—')+'</td>'+
-      '<td style="font-family:var(--mono);color:'+(z.cong>1?'#c62828':z.cong<0?'#7b1fa2':'var(--text2)')+'">'+(z.cong!==null?'$'+z.cong.toFixed(2):'—')+'</td>'+
-      '<td>'+badgeHtml(z.lmp)+'</td></tr>';
-  }).join('')||'<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3)">No data</td></tr>';
+    return `<tr><td><span style="font-weight:500">${z.name}</span><span class="zone-id">${z.zoneId}</span></td>
+    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'—'}</span></td>
+    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'—'}</td>
+    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'—'}</td>
+    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'—'}</td>
+    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'—'}</td>
+    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'—'}</td>
+    <td>${badgeHtml(z.lmp)}</td></tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No data</td></tr>';
 }
-
 function setSort(f,btn){
   if(state.sortField===f)state.sortDir*=-1;else{state.sortField=f;state.sortDir=-1;}
   document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('active'));
@@ -482,39 +633,64 @@ function setSort(f,btn){
 }
 function toggleDir(){state.sortDir*=-1;document.getElementById('dirBtn').textContent=state.sortDir===-1?'Highest first':'Lowest first';renderTable();}
 
-const TC='#555555';const GO={color:'rgba(0,0,0,0.07)'};
-function renderMainChart(view){
-  if(chart1){chart1.destroy();chart1=null;}
-  const ctx=document.getElementById('chart1').getContext('2d');
-  const zones=Object.values(state.zones).filter(z=>z.lmp!==null);
-  if(view==='lmp'){const s=[...zones].sort((a,b)=>b.lmp-a.lmp);chart1=new Chart(ctx,{type:'bar',data:{labels:s.map(z=>z.zoneId),datasets:[{data:s.map(z=>z.lmp),backgroundColor:s.map(z=>lmpColor(z.lmp)),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.parsed.y.toFixed(2)+'/MWh'}}},scales:{x:{ticks:{color:TC},grid:{color:GO.color}},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO.color}}}}});}
-  else if(view==='load'){const s=[...zones].sort((a,b)=>(b.load||0)-(a.load||0));chart1=new Chart(ctx,{type:'bar',data:{labels:s.map(z=>z.zoneId),datasets:[{data:s.map(z=>z.load||0),backgroundColor:'#1a73e8',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>Math.round(c.parsed.y).toLocaleString()+' MW'}}},scales:{x:{ticks:{color:TC},grid:{color:GO.color}},y:{ticks:{color:TC,callback:v=>v.toLocaleString()},grid:{color:GO.color}}}}});}
-  else if(view==='btm'){const s=[...zones].sort((a,b)=>(b.btm||0)-(a.btm||0));chart1=new Chart(ctx,{type:'bar',data:{labels:s.map(z=>z.zoneId),datasets:[{data:s.map(z=>z.btm||0),backgroundColor:'#43a047',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>Math.round(c.parsed.y).toLocaleString()+' MW'}}},scales:{x:{ticks:{color:TC},grid:{color:GO.color}},y:{ticks:{color:TC,callback:v=>v.toLocaleString()},grid:{color:GO.color}}}}});}
-  else if(view==='flow'){const fl=state.flows.filter(f=>Math.abs(f.flow)>0.5);chart1=new Chart(ctx,{type:'bar',data:{labels:fl.map(f=>f.name.substring(0,14)),datasets:[{data:fl.map(f=>f.flow),backgroundColor:fl.map(f=>f.flow<0?'#1a73e8':'#e53935'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.parsed.y>0?'+':'')+c.parsed.y.toFixed(1)+' MW'}}},scales:{x:{ticks:{color:TC,maxRotation:30},grid:{color:GO.color}},y:{ticks:{color:TC,callback:v=>(v>0?'+':'')+v},grid:{color:GO.color}}}}});}
-  else{chart1=new Chart(ctx,{type:'scatter',data:{datasets:[{data:zones.map(z=>({x:z.load||0,y:z.lmp||0,label:z.zoneId})),backgroundColor:zones.map(z=>lmpColor(z.lmp)),pointRadius:9,pointHoverRadius:11}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>[c.raw.label,'Load: '+Math.round(c.raw.x).toLocaleString()+' MW','LMP: $'+c.raw.y.toFixed(2)+'/MWh']}}},scales:{x:{title:{display:true,text:'Load (MW)',color:TC},ticks:{color:TC},grid:{color:GO.color}},y:{title:{display:true,text:'LMP $/MWh',color:TC},ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO.color}}}}});}
+// ── Metrics bar ──
+function updateMetrics(){
+  const sl=state.sysload;
+  if(sl){document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();}
+  const za=Object.values(state.zones).filter(z=>z.lmp!==null);
+  if(za.length){const avg=za.reduce((s,z)=>s+z.lmp,0)/za.length;document.getElementById('m-lmp').textContent='$'+avg.toFixed(2);const pk=za.reduce((a,b)=>a.lmp>b.lmp?a:b);document.getElementById('m-peak').textContent=pk.zoneId+' $'+pk.lmp.toFixed(0);}
+  const net=state.flows.reduce((s,f)=>s+f.flow,0);document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
 }
-function renderComponentChart(){
-  if(chart2){chart2.destroy();chart2=null;}
-  const ctx=document.getElementById('chart2').getContext('2d');
-  const zones=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>b.lmp-a.lmp);
-  chart2=new Chart(ctx,{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[
-    {label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'#1a73e8',stack:'s',borderSkipped:false},
-    {label:'Congestion',data:zones.map(z=>z.cong||0),backgroundColor:'#e53935',stack:'s',borderSkipped:false},
-    {label:'Loss',data:zones.map(z=>z.loss||0),backgroundColor:'#90a4ae',stack:'s',borderSkipped:false}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)}}},scales:{x:{ticks:{color:TC},grid:{color:GO.color},stacked:true},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO.color},stacked:true}}}});
+
+// ── Fetch ──
+async function fetchAll(bust){
+  setLive('loading','Fetching...');setLdBar(10);
+  const ts=bust?'?t='+Date.now():'';
+  try{
+    const [lmpR,loadR,flowR,zonalR,fuelR]=await Promise.allSettled([
+      fetch(PROXY+'/fiveminutelmp/current/locationType/LOAD%20ZONE'+ts).then(r=>r.json()),
+      fetch(PROXY+'/fiveminutesystemload/current'+ts).then(r=>r.json()),
+      fetch(PROXY+'/fiveminuteexternalflow/current'+ts).then(r=>r.json()),
+      fetch(PROXY+'/fiveminuteestimatedzonalload/current'+ts).then(r=>r.json()),
+      fetch(PROXY+'/genfuelmix/current'+ts).then(r=>r.json()),
+    ]);
+    setLdBar(65);
+    const lmpMap={};(lmpR.value?.FiveMinLmps?.FiveMinLmp||[]).forEach(z=>{lmpMap[z.Location['@LocId']]=z;});
+    const zonalMap={};(zonalR.value?.isone_web_services?.five_min_estimated_zonal_loads?.five_min_estimated_zonal_load||[]).forEach(z=>{zonalMap[z.load_zone_id]=z;});
+    state.zones={};
+    Object.entries(ZONES).forEach(([id,meta])=>{
+      const lmp=lmpMap[id],zl=zonalMap[parseInt(id)];
+      state.zones[parseInt(id)]={locId:parseInt(id),zoneId:meta.id,name:meta.name,lmp:lmp?lmp.LmpTotal:null,energy:lmp?lmp.EnergyComponent:null,cong:lmp?lmp.CongestionComponent:null,loss:lmp?lmp.LossComponent:null,load:zl?zl.estimated_load_mw:null,btm:zl?zl.estimated_btm_pv_mw:null,ts:lmp?lmp.BeginDate:null};
+    });
+    const sl=loadR.value?.FiveMinSystemLoad;state.sysload=Array.isArray(sl)?sl[0]:sl||null;
+    state.flows=(flowR.value?.ExternalFlows?.ExternalFlow||[]).map(f=>({name:f.Location?.['$']||'',flow:f.ActualFlow||0,importLimit:Math.abs(f.ImportLimit||0),exportLimit:f.ExportLimit||0}));
+    state.fuelMix=fuelR.value?.GenFuelMixes?.GenFuelMix||[];
+    setLdBar(90);
+    updateMetrics();
+    if(mapReady)updateMap();
+    renderSchematic();
+    renderTable();
+    if(chartsInited||document.getElementById('panel-charts').classList.contains('active'))renderAllCharts();
+    setLdBar(100);
+    const ts2=Object.values(state.zones).find(z=>z.ts)?.ts;
+    const t=ts2?new Date(ts2):new Date();
+    setLive('live','Live \u00b7 '+t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}));
+    document.getElementById('loading').style.display='none';
+  }catch(e){setLive('error','Error');console.error(e);}
 }
-function renderFlowChart(){
-  if(chart3){chart3.destroy();chart3=null;}
-  const ctx=document.getElementById('chart3').getContext('2d');
-  const fl=state.flows.filter(f=>Math.abs(f.flow)>0.5);
-  chart3=new Chart(ctx,{type:'bar',data:{labels:fl.map(f=>f.name.substring(0,16)),datasets:[{data:fl.map(f=>f.flow),backgroundColor:fl.map(f=>f.flow<0?'#1a73e8':'#e53935'),borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>(c.parsed.x>0?'+':'')+c.parsed.x.toFixed(1)+' MW'}}},scales:{x:{ticks:{color:TC,callback:v=>(v>0?'+':'')+v},grid:{color:GO.color}},y:{ticks:{color:TC},grid:{color:GO.color}}}}});
-}
+
+function renderAllCharts(){renderLmpBar();renderComponents();renderFlowChart();renderFuelMix();renderLoadSolar();renderLmpHistory();chartsInited=true;}
+function clearCache(){fetchAll(true);showMapStatus('Cache cleared \u2014 fetching fresh data',3000);}
+function setLive(t,m){const d=document.getElementById('liveDot');d.className='live-dot'+(t==='loading'?' loading':t==='error'?' error':'');document.getElementById('liveText').textContent=m;}
+function setLdBar(p){document.getElementById('ldBar').style.width=p+'%';}
+
 function switchTab(name,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('panel-'+name).classList.add('active');
   if(name==='map')setTimeout(()=>map&&map.resize(),50);
-  if(name==='charts'){chartsRendered=true;setTimeout(()=>{renderMainChart(document.getElementById('chartSel').value);renderComponentChart();renderFlowChart();},50);}
+  if(name==='charts'){setTimeout(()=>renderAllCharts(),50);}
 }
 
 initMap();
@@ -523,7 +699,3 @@ setInterval(fetchAll,300000);
 </script>
 </body>
 </html>
-
-
-
-
