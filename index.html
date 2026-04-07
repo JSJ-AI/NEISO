@@ -312,10 +312,10 @@ function onMapReady(){
   map.addLayer({id:'transm-high',type:'line',source:'transmission',filter:['>=',['to-number',['get','voltage']],345000],paint:{'line-color':'#c62828','line-width':['interpolate',['linear'],['zoom'],6,1.5,10,3.5],'line-opacity':0.85}});
   // External flows
   map.addSource('ext-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-  map.addLayer({id:'ext-flow-line',type:'line',source:'ext-flows',paint:{'line-color':'#1a73e8','line-width':['interpolate',['linear'],['get','mwAbs'],0,2,2000,7],'line-opacity':0.9}});
+  // ext-flow removed
   // Zone flows
   map.addSource('zone-flows',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
-  map.addLayer({id:'zone-flow-line',type:'line',source:'zone-flows',paint:{'line-color':['get','lineColor'],'line-width':['interpolate',['linear'],['get','strength'],0,1.5,60,5],'line-opacity':0.8,'line-dasharray':[4,2]}});
+  // zone-flow removed
   // Zones
   map.addSource('zones',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
   map.addLayer({id:'zone-fill',type:'circle',source:'zones',paint:{'circle-radius':['interpolate',['linear'],['zoom'],6,20,10,38],'circle-color':['get','color'],'circle-opacity':0.9,'circle-stroke-width':2.5,'circle-stroke-color':'rgba(255,255,255,.95)'}});
@@ -345,19 +345,19 @@ function onMapReady(){
     map.on('mouseleave',lid,()=>{hideTip();map.getCanvas().style.cursor='';});
   });
   // Hover on ext flows
-  map.on('mousemove','ext-flow-line',e=>{
+  if(false) map.on('xa',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;
     showTip(e,p.label+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Source','ISO-NE measured (5-min)']]);
     map.getCanvas().style.cursor='pointer';
   });
-  map.on('mouseleave','ext-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
+
   // Hover on zone flows
-  map.on('mousemove','zone-flow-line',e=>{
+  if(false) map.on('xb',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;const diff=Math.abs(parseFloat(p.lmpDiff));
     showTip(e,p.fromZone+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂÃÂÃÂÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
     map.getCanvas().style.cursor='pointer';
   });
-  map.on('mouseleave','zone-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
+
   map.on('mouseenter','zone-fill',()=>map.getCanvas().style.cursor='pointer');
   map.on('mouseleave','zone-fill',()=>map.getCanvas().style.cursor='');
 
