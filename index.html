@@ -450,35 +450,84 @@ function renderSchematic(){
   svg.style.filter='drop-shadow(0 2px 12px rgba(0,0,0,0.1))';
   svg.innerHTML='';
 
-  // Zoom/pan state
-  if(!wrap._schZoom){
-    wrap._schZoom=1;
-    wrap._schX=0;
-    wrap._schY=0;
-    wrap.style.overflow='auto';
-    wrap.style.cursor='grab';
-    wrap.style.userSelect='none';
-    wrap.style.padding='20px';
-    wrap.style.alignItems='flex-start';
-    wrap.style.justifyContent='flex-start';
+  // Zoom/pan — fresh setup each render
+  wrap._schZoom = wrap._schZoom||1;
+  wrap._schPX   = wrap._schPX  ||0;
+  wrap._schPY   = wrap._schPY  ||0;
 
-    // Scroll wheel zoom
-    wrap.addEventListener('wheel',function(e){
-      e.preventDefault();
-      const delta=e.deltaY>0?0.9:1.1;
-      wrap._schZoom=Math.min(Math.max(wrap._schZoom*delta,0.4),3);
-      svg.style.transform='scale('+wrap._schZoom+')';
-      svg.style.transformOrigin='top left';
-    },{passive:false});
+  // Container is the viewport, svg moves inside it
+  wrap.style.overflow='hidden';
+  wrap.style.cursor='grab';
+  wrap.style.userSelect='none';
+  wrap.style.padding='0';
+  wrap.style.alignItems='flex-start';
+  wrap.style.justifyContent='flex-start';
+  wrap.style.position='relative';
 
-    // Reset zoom on double-click
-    wrap.addEventListener('dblclick',function(){
-      wrap._schZoom=1;
-      svg.style.transform='scale(1)';
-    });
+  function applyTransform(){
+    svg.style.transform='translate('+wrap._schPX+'px,'+wrap._schPY+'px) scale('+wrap._schZoom+')';
+    svg.style.transformOrigin='0 0';
   }
-  svg.style.transform='scale('+wrap._schZoom+')';
-  svg.style.transformOrigin='top left';
+  applyTransform();
+
+  // Remove old listeners by replacing wrap with a clone
+  const newWrap = wrap.cloneNode(false);
+  wrap.parentNode.insertBefore(newWrap, wrap);
+  newWrap.appendChild(svg);
+  wrap.parentNode.removeChild(wrap);
+  // Update reference
+  const w = newWrap;
+  w._schZoom = wrap._schZoom||1;
+  w._schPX   = wrap._schPX  ||0;
+  w._schPY   = wrap._schPY  ||0;
+  w.style.overflow='hidden';
+  w.style.cursor='grab';
+  w.style.userSelect='none';
+  w.style.padding='0';
+  w.style.alignItems='flex-start';
+  w.style.justifyContent='flex-start';
+  w.style.position='relative';
+  function applyT(){
+    svg.style.transform='translate('+w._schPX+'px,'+w._schPY+'px) scale('+w._schZoom+')';
+    svg.style.transformOrigin='0 0';
+  }
+  applyT();
+
+  // Zoom toward mouse cursor
+  w.addEventListener('wheel',function(e){
+    e.preventDefault();
+    const rect=w.getBoundingClientRect();
+    const mx=e.clientX-rect.left;
+    const my=e.clientY-rect.top;
+    const delta=e.deltaY>0?0.88:1.12;
+    const newZoom=Math.min(Math.max(w._schZoom*delta,0.3),4);
+    // Adjust pan so zoom centers on mouse
+    w._schPX = mx - (mx - w._schPX)*(newZoom/w._schZoom);
+    w._schPY = my - (my - w._schPY)*(newZoom/w._schZoom);
+    w._schZoom = newZoom;
+    applyT();
+  },{passive:false});
+
+  // Pan by dragging
+  let _dragging=false,_dx=0,_dy=0;
+  w.addEventListener('mousedown',function(e){
+    if(e.button!==0)return;
+    _dragging=true;_dx=e.clientX-w._schPX;_dy=e.clientY-w._schPY;
+    w.style.cursor='grabbing';
+  });
+  window.addEventListener('mousemove',function(e){
+    if(!_dragging)return;
+    w._schPX=e.clientX-_dx;w._schPY=e.clientY-_dy;
+    applyT();
+  });
+  window.addEventListener('mouseup',function(){
+    _dragging=false;w.style.cursor='grab';
+  });
+
+  // Double-click to reset
+  w.addEventListener('dblclick',function(){
+    w._schZoom=1;w._schPX=0;w._schPY=0;applyT();
+  });
 
   const NS='http://www.w3.org/2000/svg';
   function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(txt!==undefined)e.textContent=txt;return e;}
@@ -585,7 +634,7 @@ function renderSchematic(){
     }
     if(zs&&zs.btm!=null&&zs.btm>0){
       ap(g,
-        el('text',{x:pos.x+pos.w-12,y:pos.y+104,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'\u2600 BTM SOLAR'),
+        el('text',{x:pos.x+pos.w-12,y:pos.y+104,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'☀ BTM SOLAR'),
         el('text',{x:pos.x+pos.w-12,y:pos.y+118,'text-anchor':'end','font-size':'13','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW')
       );
     }
@@ -637,7 +686,7 @@ function renderSchematic(){
       el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.75'}),
       el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col,opacity:'0.9'}),
       el('rect',{x:mx-22,y:my-9,width:44,height:17,fill:'rgba(255,255,255,0.92)',rx:4}),
-      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'\u0394$'+ad.toFixed(2))
+      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'Δ$'+ad.toFixed(2))
     );
   }
 
@@ -663,7 +712,7 @@ function renderSchematic(){
       el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.9'}),
       el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col}),
       el('rect',{x:mx-34,y:my-10,width:68,height:19,fill:'rgba(255,255,255,0.93)',rx:4,stroke:col,'stroke-width':'0.8'}),
-      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'\u2193':'\u2191')+mw+'MW')
+      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'↓':'↑')+mw+'MW')
     );
   }
 
@@ -691,7 +740,7 @@ function renderSchematic(){
   const ts=Object.values(state.zones).find(z=>z.ts)?new Date(Object.values(state.zones).find(z=>z.ts).ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'--:--';
   ap(svg,
     el('text',{x:VW/2,y:VH-8,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#ccc'},
-      'ISO-NE Load Zones \u00b7 LMP $/MWh \u00b7 '+ts+' \u00b7 Arrow = energy flow direction \u00b7 \u0394$ = price spread \u00b7 \u2193 = import \u2191 = export')
+      'ISO-NE Load Zones · LMP $/MWh · '+ts+' · Arrow = energy flow direction · Δ$ = price spread · ↓ = import ↑ = export')
   );
 }
 
