@@ -274,14 +274,14 @@ let map=null,mapReady=false,transmVisible=true,flowsVisible=true;
 let charts={};
 let chartsInited=false;
 
-// ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Color helpers ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Color helpers ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 function lmpColor(v){if(v===null||v===undefined)return '#90a4ae';if(v<0)return '#7b1fa2';if(v<30)return '#43a047';if(v<60)return '#fb8c00';if(v<90)return '#e53935';return '#880e4f';}
 function lmpColorLight(v){if(v===null||v===undefined)return '#eceff1';if(v<0)return '#f3e5f5';if(v<30)return '#e8f5e9';if(v<60)return '#fff3e0';if(v<90)return '#ffebee';return '#fce4ec';}
 function lmpClass(v){if(v===null)return '';if(v<0)return 'lmp-neg';if(v>65)return 'lmp-high';if(v>35)return 'lmp-mid';return 'lmp-low';}
 function badgeHtml(v){if(v===null)return '';if(v<0)return '<span class="badge badge-neg">NEG</span>';if(v>65)return '<span class="badge badge-high">HIGH</span>';if(v>35)return '<span class="badge badge-mid">MID</span>';return '<span class="badge badge-low">LOW</span>';}
 function makeArc(from,to,c=0.25){const s=16,pts=[],mx=(from[0]+to[0])/2,my=(from[1]+to[1])/2,dx=to[0]-from[0],dy=to[1]-from[1],cx=mx-c*dy,cy=my+c*dx;for(let i=0;i<=s;i++){const t=i/s;pts.push([(1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0],(1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1]]);}return pts;}
 
-// ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Map init ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Map init ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 function initMap(){
   map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.4],zoom:6.8,attributionControl:false});
   map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
@@ -328,7 +328,7 @@ function onMapReady(){
       '<div class="popup-name">'+z.name+' <span style="color:#999;font-size:11px">('+z.zoneId+')</span></div>'+
       ['LMP','Energy','Congestion','Loss','Load','Solar BTM'].map((k,i)=>{
         const vals=[z.lmp,z.energy,z.cong,z.loss,z.load,z.btm];
-        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'];
+        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'];
         return '<div class="popup-row"><span class="popup-key">'+k+'</span><span class="popup-val">'+fmt[i](vals[i])+'</span></div>';
       }).join('')
     ).addTo(map);
@@ -339,7 +339,7 @@ function onMapReady(){
     map.on('mousemove',lid,e=>{
       const f=e.features[0];if(!f)return;
       const v=f.properties.voltage||0;
-      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'],['Name',f.properties.name||'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ']]);
+      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Name',f.properties.name||'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ']]);
       map.getCanvas().style.cursor='crosshair';
     });
     map.on('mouseleave',lid,()=>{hideTip();map.getCanvas().style.cursor='';});
@@ -347,14 +347,14 @@ function onMapReady(){
   // Hover on ext flows
   map.on('mousemove','ext-flow-line',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;
-    showTip(e,p.label+' ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'],['Source','ISO-NE measured (5-min)']]);
+    showTip(e,p.label+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'],['Source','ISO-NE measured (5-min)']]);
     map.getCanvas().style.cursor='pointer';
   });
   map.on('mouseleave','ext-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
   // Hover on zone flows
   map.on('mousemove','zone-flow-line',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;const diff=Math.abs(parseFloat(p.lmpDiff));
-    showTip(e,p.fromZone+' ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
+    showTip(e,p.fromZone+' ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂÃÂÃÂÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
     map.getCanvas().style.cursor='pointer';
   });
   map.on('mouseleave','zone-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
@@ -436,91 +436,121 @@ function toggleFlows(){
   ['ext-flow-line','zone-flow-line'].forEach(id=>{if(map&&map.getLayer(id))map.setLayoutProperty(id,'visibility',flowsVisible?'visible':'none');});
 }
 
-// ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Schematic ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
-function(){
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Schematic ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+function renderSchematic(){
   const svg=document.getElementById('schematic-svg');
-  svg.setAttribute('viewBox','0 0 820 570');
   svg.innerHTML='';
   const NS='http://www.w3.org/2000/svg';
-  function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(txt!==undefined)e.textContent=txt;return e;}
-  function ap(parent,...children){children.forEach(c=>parent.appendChild(c));return parent;}
-  const FUEL_COLORS={'Natural Gas':'#f4511e','Nuclear':'#8e24aa','Hydro':'#1a73e8','Wind':'#43a047','Solar':'#f9a825','Oil':'#795548','Other':'#90a4ae','Wood':'#6d4c41','Refuse':'#546e7a','Landfill Gas':'#00acc1','Coal':'#616161'};
-  const ZP={ME:{x:600,y:55,w:170,h:115},NH:{x:420,y:60,w:158,h:110},VT:{x:240,y:55,w:158,h:110},WCMA:{x:240,y:225,w:168,h:118},NEMA:{x:420,y:225,w:158,h:118},SEMA:{x:598,y:225,w:170,h:118},CT:{x:80,y:400,w:175,h:120},RI:{x:440,y:400,w:158,h:120}};
-  ap(svg,el('rect',{x:0,y:0,width:820,height:570,fill:'#f8f9fa'}));
-  const totalGen=state.fuelMix.reduce((s,f)=>s+(f.GenMw||0),0);
-  const fuelTop=state.fuelMix.filter(f=>(f.GenMw||0)>30).sort((a,b)=>b.GenMw-a.GenMw).slice(0,7);
-  ap(svg,el('text',{x:12,y:11,'font-size':'9','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'Generation mix'));
-  let bx=12; const BARW=200,BARH=11;
-  fuelTop.forEach(f=>{const fw=Math.round((f.GenMw||0)/totalGen*BARW);const fc=FUEL_COLORS[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';ap(svg,el('rect',{x:bx,y:14,width:fw,height:BARH,fill:fc,rx:1}));bx+=fw;});
-  let lx=12;
-  fuelTop.slice(0,6).forEach(f=>{const fc=FUEL_COLORS[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';const pct=Math.round((f.GenMw||0)/totalGen*100);ap(svg,el('rect',{x:lx,y:28,width:7,height:7,fill:fc,rx:1}),el('text',{x:lx+9,y:35,'font-size':'8.5','font-family':'Inter,sans-serif',fill:'#666'},(f.FuelCategory||f.FuelCategoryRollup||'?').substring(0,9)+' '+pct+'%'));lx+=70;});
-  const sl=state.sysload;
-  if(sl){const net=Math.round(state.flows.reduce((s,f)=>s+(f.flow||0),0));const solar=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0));[['System load',Math.round(sl.LoadMw||0).toLocaleString()+' MW'],['Solar BTM',solar.toLocaleString()+' MW'],['Net interchange',(net>=0?'+':'')+net+' MW']].forEach(([lbl,val],i)=>{ap(svg,el('text',{x:808,y:11+i*13,'text-anchor':'end','font-size':'9','font-family':'Inter,sans-serif','font-weight':'500',fill:'#888'},lbl),el('text',{x:808,y:11+i*13,'text-anchor':'start','font-size':'9','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:'#333',dx:'4'},val));});}
-  function lmpC(lmp){if(lmp===null)return{fill:'#eceff1',border:'#90a4ae',text:'#546e7a',hdr:'#90a4ae'};if(lmp<0)return{fill:'#f3e5f5',border:'#7b1fa2',text:'#6a1b9a',hdr:'#7b1fa2'};if(lmp<30)return{fill:'#e8f5e9',border:'#43a047',text:'#2e7d32',hdr:'#43a047'};if(lmp<60)return{fill:'#fff3e0',border:'#fb8c00',text:'#e65100',hdr:'#fb8c00'};if(lmp<90)return{fill:'#ffebee',border:'#e53935',text:'#c62828',hdr:'#e53935'};return{fill:'#fce4ec',border:'#880e4f',text:'#880e4f',hdr:'#880e4f'};}
-  function drawZone(zid){
-    const pos=ZP[zid];if(!pos)return;
-    const zs=Object.values(state.zones).find(z=>z.zoneId===zid);
-    const lmp=zs?.lmp??null;const {fill,border,text,hdr}=lmpC(lmp);const g=el('g',{});
-    ap(g,el('rect',{x:pos.x+2,y:pos.y+2,width:pos.w,height:pos.h,fill:'rgba(0,0,0,0.07)',rx:8}));
-    ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:pos.h,fill,stroke:border,'stroke-width':2,rx:8}));
-    ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:24,fill:hdr,rx:8}));
-    ap(g,el('rect',{x:pos.x,y:pos.y+16,width:pos.w,height:8,fill:hdr}));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+16,'text-anchor':'middle','font-size':'11','font-family':'Inter,sans-serif','font-weight':'700',fill:'#fff'},zid));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+44,'text-anchor':'middle','font-size':'17','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:text},lmp!==null?'$'+lmp.toFixed(2):'-'));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+54,'text-anchor':'middle','font-size':'8','font-family':'Inter,sans-serif',fill:'#aaa'},'$/MWh LMP'));
-    ap(g,el('line',{x1:pos.x+10,y1:pos.y+60,x2:pos.x+pos.w-10,y2:pos.y+60,stroke:'rgba(0,0,0,0.1)','stroke-width':0.5}));
-    if(zs?.load!=null){ap(g,el('text',{x:pos.x+10,y:pos.y+71,'font-size':'8','font-family':'Inter,sans-serif','font-weight':'600',fill:'#777'},'LOAD'),el('text',{x:pos.x+10,y:pos.y+82,'font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#333'},Math.round(zs.load).toLocaleString()+' MW'));}
-    if(zs?.btm!=null&&zs.btm>0){ap(g,el('text',{x:pos.x+pos.w-10,y:pos.y+71,'text-anchor':'end','font-size':'8','font-family':'Inter,sans-serif','font-weight':'600',fill:'#777'},'BTM \u2600'),el('text',{x:pos.x+pos.w-10,y:pos.y+82,'text-anchor':'end','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW'));}
-    if(zs?.energy!=null){const bw=pos.w-20,bh=6,by2=pos.y+pos.h-14,bxz=pos.x+10;const epx=Math.max(Math.min((zs.energy||0)/40,1)*bw,2);const cpx=Math.min(Math.abs(zs.cong||0)/5,1)*(bw*0.25);ap(g,el('rect',{x:bxz,y:by2,width:bw,height:bh,fill:'rgba(0,0,0,0.07)',rx:2}),el('rect',{x:bxz,y:by2,width:epx,height:bh,fill:'#1a73e8',rx:2}));if(Math.abs(zs.cong||0)>0.1)ap(g,el('rect',{x:bxz+epx,y:by2,width:Math.max(cpx,1.5),height:bh,fill:(zs.cong||0)>0?'#e53935':'#7b1fa2',rx:1}));ap(g,el('text',{x:bxz,y:by2-2,'font-size':'7.5','font-family':'Inter,sans-serif',fill:'#aaa'},'E:$'+(zs.energy||0).toFixed(1)+(Math.abs(zs.cong||0)>0.1?' C:$'+(zs.cong||0).toFixed(1):'')));}
-    ap(svg,g);
+  function el(tag,attrs,txt){
+    const e=document.createElementNS(NS,tag);
+    Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));
+    if(txt!==undefined)e.textContent=txt;
+    return e;
   }
-  function drawZoneFlow(fromId,toId,ox){
-    const fp=ZP[fromId],tp=ZP[toId];if(!fp||!tp)return;
-    const zsF=Object.values(state.zones).find(z=>z.zoneId===fromId);
-    const zsT=Object.values(state.zones).find(z=>z.zoneId===toId);
-    if(!zsF||!zsT||zsF.lmp===null||zsT.lmp===null)return;
-    const diff=zsT.lmp-zsF.lmp;if(Math.abs(diff)<0.05)return;
-    const sP=diff>0?fp:tp,dP=diff>0?tp:fp;
-    const sameRow=Math.abs(sP.y-dP.y)<60;
-    let x1,y1,x2,y2;
-    if(sameRow){const gr=dP.x>sP.x;x1=gr?sP.x+sP.w:sP.x;y1=sP.y+sP.h/2;x2=gr?dP.x:dP.x+dP.w;y2=dP.y+dP.h/2;}
-    else{x1=sP.x+sP.w/2+(ox||0);y1=dP.y>sP.y?sP.y+sP.h:sP.y;x2=dP.x+dP.w/2+(ox||0);y2=dP.y>sP.y?dP.y:dP.y+dP.h;}
-    const ad=Math.abs(diff);const col=ad>20?'#e53935':ad>8?'#fb8c00':ad>3?'#1a73e8':'#90a4ae';
-    const sw=Math.max(1.2,Math.min(ad/3,3.5));
-    const mx=(x1+x2)/2,my=(y1+y2)/2;
-    const ang=Math.atan2(y2-y1,x2-x1);const al=9,aw=4.5;
-    const ax1=x2-al*Math.cos(ang)+aw*Math.sin(ang),ay1=y2-al*Math.sin(ang)-aw*Math.cos(ang);
-    const ax2=x2-al*Math.cos(ang)-aw*Math.sin(ang),ay2=y2-al*Math.sin(ang)+aw*Math.cos(ang);
-    ap(svg,el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:0.8}),el('polygon',{points:`${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`,fill:col,opacity:0.9}),el('rect',{x:mx-18,y:my-7,width:36,height:13,fill:'rgba(255,255,255,0.88)',rx:3}),el('text',{x:mx,y:my+2,'text-anchor':'middle','font-size':'8','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'\u0394$'+ad.toFixed(2)));
+
+  // Background
+  svg.appendChild(el('rect',{x:0,y:0,width:700,height:460,fill:'#f8f9fa',rx:0}));
+
+  // Zone connections (draw first, behind zones)
+  for(const [aId,bId] of SCH_CONN){
+    const zA=SCH_ZONES.find(z=>z.id===aId),zB=SCH_ZONES.find(z=>z.id===bId);
+    if(!zA||!zB)continue;
+    const ax=zA.x+zA.w/2,ay=zA.y+zA.h/2,bx=zB.x+zB.w/2,by=zB.y+zB.h/2;
+    const stateA=state.zones[aId],stateB=state.zones[bId];
+    let strokeColor='#ccc',strokeW=1.5,dash='';
+    if(stateA&&stateB&&stateA.lmp!==null&&stateB.lmp!==null){
+      const diff=Math.abs(stateA.lmp-stateB.lmp);
+      if(diff>20){strokeColor='#e53935';strokeW=2.5;}
+      else if(diff>8){strokeColor='#fb8c00';strokeW=2;}
+      else{strokeColor='#1a73e8';strokeW=1.5;}
+      dash=diff>5?'':'4,3';
+      // Arrow direction
+      const fromZ=stateA.lmp<stateB.lmp?zA:zB;
+      const toZ=stateA.lmp<stateB.lmp?zB:zA;
+      const fx=fromZ.x+fromZ.w/2,fy=fromZ.y+fromZ.h/2,tx=toZ.x+toZ.w/2,ty=toZ.y+toZ.h/2;
+      const arrowId='arr'+aId+'_'+bId;
+      const marker=el('marker',{id:arrowId,markerWidth:'6',markerHeight:'6',refX:'3',refY:'3',orient:'auto'});
+      const path=el('path',{d:'M0,0 L6,3 L0,6 Z',fill:strokeColor});
+      marker.appendChild(path);
+      const defs=svg.querySelector('defs')||svg.appendChild(el('defs',{}));
+      defs.appendChild(marker);
+      const line=el('line',{x1:fx,y1:fy,x2:tx,y2:ty,stroke:strokeColor,'stroke-width':strokeW,'stroke-dasharray':dash,'marker-end':'url(#'+arrowId+')'});
+      svg.appendChild(line);
+    } else {
+      svg.appendChild(el('line',{x1:ax,y1:ay,x2:bx,y2:by,stroke:'#ddd','stroke-width':1.5}));
+    }
   }
-  function drawExtFlow(key,label,ex,ey,toZid,side){
-    const flow=state.flows.find(f=>f.name.toUpperCase().includes(key.toUpperCase()));
-    if(!flow||Math.abs(flow.flow)<5)return;
-    const mw=Math.abs(Math.round(flow.flow));const imp=flow.flow<0;
-    const tp=ZP[toZid];if(!tp)return;
-    let tx,ty;
-    if(side==='left'){tx=tp.x;ty=tp.y+tp.h/2;}else if(side==='right'){tx=tp.x+tp.w;ty=tp.y+tp.h/2;}else if(side==='top'){tx=tp.x+tp.w/2;ty=tp.y;}else{tx=tp.x+tp.w/2;ty=tp.y+tp.h;}
-    const x1=imp?ex:tx,y1=imp?ey:ty,x2=imp?tx:ex,y2=imp?ty:ey;
-    const col=imp?'#0d47a1':'#b71c1c';const sw=Math.min(2+mw/300,5.5);
-    const ang=Math.atan2(y2-y1,x2-x1);const al=10,aw=5;
-    const ax1=x2-al*Math.cos(ang)+aw*Math.sin(ang),ay1=y2-al*Math.sin(ang)-aw*Math.cos(ang);
-    const ax2=x2-al*Math.cos(ang)-aw*Math.sin(ang),ay2=y2-al*Math.sin(ang)+aw*Math.cos(ang);
-    const mx=(x1+x2)/2,my=(y1+y2)/2;
-    ap(svg,el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:0.9}),el('polygon',{points:`${x2},${y2} ${ax1},${ay1} ${ax2},${ay2}`,fill:col}),el('rect',{x:mx-28,y:my-8,width:56,height:14,fill:'rgba(255,255,255,0.9)',rx:3,stroke:col,'stroke-width':0.5}),el('text',{x:mx,y:my+2,'text-anchor':'middle','font-size':'8.5','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'\u2193':'\u2191')+mw+'MW'));
+
+  // External interface arrows
+  const extArrows=[
+    {label:'NY',x:10,y:300,tx:60,ty:300,key:'ROSETON'},
+    {label:'NY',x:10,y:370,tx:60,ty:370,key:'SALBRYNB'},
+    {label:'QC',x:100,y:10,tx:100,ty:80,key:'HQMRL'},
+    {label:'NB',x:500,y:10,tx:500,ty:40,key:'HQ_P1'},
+  ];
+  for(const arr of extArrows){
+    const flow=state.flows.find(f=>f.name.toUpperCase().includes(arr.key.toUpperCase()));
+    if(!flow||Math.abs(flow.flow)<5)continue;
+    const imp=flow.flow<0;
+    const fx=imp?arr.x:arr.tx,fy=imp?arr.y:arr.ty,tx=imp?arr.tx:arr.x,ty=imp?arr.ty:arr.y;
+    const color=imp?'#1a73e8':'#e53935';
+    const mw=Math.abs(Math.round(flow.flow));
+    const arrId='ext_'+arr.key;
+    const defs=svg.querySelector('defs')||svg.appendChild(el('defs',{}));
+    const marker=el('marker',{id:arrId,markerWidth:'6',markerHeight:'6',refX:'3',refY:'3',orient:'auto'});
+    marker.appendChild(el('path',{d:'M0,0 L6,3 L0,6 Z',fill:color}));
+    defs.appendChild(marker);
+    svg.appendChild(el('line',{x1:fx,y1:fy,x2:tx,y2:ty,stroke:color,'stroke-width':3,'marker-end':'url(#'+arrId+')'}));
+    svg.appendChild(el('text',{x:(fx+tx)/2+4,y:(fy+ty)/2-4,'font-size':'10','font-family':'JetBrains Mono,monospace',fill:color,'font-weight':'500'},arr.label+' '+mw+'MW'));
   }
-  drawZoneFlow('VT','WCMA');drawZoneFlow('NH','NEMA');drawZoneFlow('ME','NH',-20);
-  drawZoneFlow('WCMA','NEMA');drawZoneFlow('NEMA','SEMA');drawZoneFlow('NEMA','CT',20);
-  drawZoneFlow('SEMA','RI');drawZoneFlow('CT','RI');
-  drawExtFlow('ROSETON','NY-H',10,ZP.WCMA.y+ZP.WCMA.h/2,'WCMA','left');
-  drawExtFlow('SALBRYNB','NY-N',10,ZP.CT.y+ZP.CT.h/2,'CT','left');
-  drawExtFlow('HQMRL','QC-NE',ZP.ME.x+ZP.ME.w/2,10,'ME','top');
-  drawExtFlow('HQ_P1','QC-P1',ZP.VT.x+ZP.VT.w/2,10,'VT','top');
-  drawExtFlow('HQHIGATE','NB',810,ZP.ME.y+30,'ME','right');
-  Object.keys(ZP).forEach(drawZone);
+
+  // Zone boxes
+  for(const zdef of SCH_ZONES){
+    const zs=state.zones[zdef.id];
+    const lmp=zs?zs.lmp:null;
+    const fillColor=lmpColorLight(lmp);
+    const borderColor=lmpColor(lmp);
+    const textColor=lmp!==null&&lmp<0?'#7b1fa2':lmp!==null&&lmp>65?'#c62828':lmp!==null&&lmp>35?'#e65100':'#2e7d32';
+
+    // Box
+    svg.appendChild(el('rect',{x:zdef.x,y:zdef.y,width:zdef.w,height:zdef.h,fill:fillColor,stroke:borderColor,'stroke-width':2,rx:8}));
+
+    // Zone abbr
+    svg.appendChild(el('text',{x:zdef.x+zdef.w/2,y:zdef.y+zdef.h/2-18,'text-anchor':'middle','font-size':'15','font-family':'Inter,sans-serif','font-weight':'600',fill:'#333'},zdef.abbr));
+
+    // LMP
+    const lmpStr=lmp!==null?'$'+lmp.toFixed(2):'-';
+    svg.appendChild(el('text',{x:zdef.x+zdef.w/2,y:zdef.y+zdef.h/2+2,'text-anchor':'middle','font-size':'13','font-family':'JetBrains Mono,monospace','font-weight':'500',fill:textColor},lmpStr));
+
+    // Load
+    if(zs&&zs.load!==null){
+      svg.appendChild(el('text',{x:zdef.x+zdef.w/2,y:zdef.y+zdef.h/2+18,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#888'},Math.round(zs.load).toLocaleString()+' MW'));
+    }
+
+    // BTM solar badge
+    if(zs&&zs.btm!==null&&zs.btm>200){
+      svg.appendChild(el('text',{x:zdef.x+zdef.w-6,y:zdef.y+14,'text-anchor':'end','font-size':'9','font-family':'Inter,sans-serif',fill:'#43a047'},'\u2600 '+Math.round(zs.btm)));
+    }
+  }
+
+  // Title + timestamp
   const ts=Object.values(state.zones).find(z=>z.ts)?.ts;
   const tStr=ts?new Date(ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'--:--';
-  ap(svg,el('text',{x:410,y:563,'text-anchor':'middle','font-size':'8.5','font-family':'Inter,sans-serif',fill:'#ccc'},'ISO-NE Load Zones \u00b7 '+tStr+' \u00b7 Arrow=energy flow \u00b7 \u0394$=price spread \u00b7 \u2193=import \u2191=export'));
+  svg.appendChild(el('text',{x:350,y:440,'text-anchor':'middle','font-size':'11','font-family':'Inter,sans-serif',fill:'#aaa'},'ISO-NE Load Zone Schematic \u00b7 LMP in $/MWh \u00b7 Updated '+tStr));
+
+  // System total
+  if(state.sysload){
+    const sl=state.sysload;
+    const loadMw=Math.round(sl.LoadMw||0).toLocaleString();
+    svg.appendChild(el('text',{x:12,y:450,'text-anchor':'start','font-size':'10','font-family':'JetBrains Mono,monospace',fill:'#888'},'Sys load: '+loadMw+' MW'));
+    const netFlow=Math.round(state.flows.reduce((s,f)=>s+f.flow,0));
+    svg.appendChild(el('text',{x:688,y:450,'text-anchor':'end','font-size':'10','font-family':'JetBrains Mono,monospace',fill:'#888'},'Net int: '+(netFlow>=0?'+':'')+netFlow+' MW'));
+  }
 }
+
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Charts ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
+const TC='#555',GO='rgba(0,0,0,.07)';
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 function renderCharts(){
   if(!document.getElementById('panel-charts').classList.contains('active'))return;
@@ -568,7 +598,7 @@ function renderLoadSolar(){
 }
 
 function renderLmpHistory(){
-  // Placeholder ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ would need historical polling to build this
+  // Placeholder ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ would need historical polling to build this
   // Show current zone LMPs as sparklines instead
   destroyChart('lmpHist');
   const zones=Object.values(state.zones).filter(z=>z.lmp!==null);
@@ -577,26 +607,26 @@ function renderLmpHistory(){
   charts['lmpHist']=new Chart(document.getElementById('ch-lmp-history').getContext('2d'),{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{label:'LMP',data:zones.map(z=>z.lmp),backgroundColor:zones.map(z=>ZONE_COLORS[z.zoneId]||'#90a4ae'),borderRadius:5,borderSkipped:false},{label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'rgba(26,115,232,.25)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TC,font:{size:11},boxWidth:12},position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)+'/MWh'}}},scales:{x:{ticks:{color:TC},grid:{color:GO}},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO}}}}});
 }
 
-// ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Table ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Table ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 function renderTable(){
   const rows=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>{
     if(state.sortField==='name')return state.sortDir*(a.name.localeCompare(b.name));
     return state.sortDir*((b[state.sortField]??-Infinity)-(a[state.sortField]??-Infinity));
   });
   ['name','lmp','load','btm','energy','cong','loss'].forEach(f=>{
-    const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ':'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'):'';
+    const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ':'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'):'';
     const th=document.getElementById('th-'+f);if(th)th.classList.toggle('sorted',f===state.sortField);
   });
   const mx=Math.max(...rows.map(r=>r.load||0));
   document.getElementById('tblBody').innerHTML=rows.map(z=>{
     const p=mx>0?((z.load||0)/mx*100).toFixed(0):0;
     return `<tr><td><span style="font-weight:500">${z.name}</span><span class="zone-id">${z.zoneId}</span></td>
-    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</span></td>
-    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
-    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
-    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
-    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
-    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ'}</td>
+    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</span></td>
+    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
+    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'ÃÂÃÂ¢ÃÂÃÂÃÂÃÂ'}</td>
     <td>${badgeHtml(z.lmp)}</td></tr>`;
   }).join('')||'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No data</td></tr>';
 }
@@ -610,7 +640,7 @@ function setSort(f,btn){
 }
 function toggleDir(){state.sortDir*=-1;document.getElementById('dirBtn').textContent=state.sortDir===-1?'Highest first':'Lowest first';renderTable();}
 
-// ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Metrics bar ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Metrics bar ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 function updateMetrics(){
   const sl=state.sysload;
   if(sl){document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();}
@@ -619,7 +649,7 @@ function updateMetrics(){
   const net=state.flows.reduce((s,f)=>s+f.flow,0);document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
 }
 
-// ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Fetch ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+// ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ Fetch ÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂ
 async function fetchAll(bust){
   setLive('loading','Fetching...');setLdBar(10);
   const ts=bust?'?t='+Date.now():'';
