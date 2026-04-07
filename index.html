@@ -274,20 +274,33 @@ let map=null,mapReady=false,transmVisible=true,flowsVisible=true;
 let charts={};
 let chartsInited=false;
 
-// Ã¢ÂÂÃ¢ÂÂ Color helpers Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Color helpers ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 function lmpColor(v){if(v===null||v===undefined)return '#90a4ae';if(v<0)return '#7b1fa2';if(v<30)return '#43a047';if(v<60)return '#fb8c00';if(v<90)return '#e53935';return '#880e4f';}
 function lmpColorLight(v){if(v===null||v===undefined)return '#eceff1';if(v<0)return '#f3e5f5';if(v<30)return '#e8f5e9';if(v<60)return '#fff3e0';if(v<90)return '#ffebee';return '#fce4ec';}
 function lmpClass(v){if(v===null)return '';if(v<0)return 'lmp-neg';if(v>65)return 'lmp-high';if(v>35)return 'lmp-mid';return 'lmp-low';}
 function badgeHtml(v){if(v===null)return '';if(v<0)return '<span class="badge badge-neg">NEG</span>';if(v>65)return '<span class="badge badge-high">HIGH</span>';if(v>35)return '<span class="badge badge-mid">MID</span>';return '<span class="badge badge-low">LOW</span>';}
 function makeArc(from,to,c=0.25){const s=16,pts=[],mx=(from[0]+to[0])/2,my=(from[1]+to[1])/2,dx=to[0]-from[0],dy=to[1]-from[1],cx=mx-c*dy,cy=my+c*dx;for(let i=0;i<=s;i++){const t=i/s;pts.push([(1-t)*(1-t)*from[0]+2*(1-t)*t*cx+t*t*to[0],(1-t)*(1-t)*from[1]+2*(1-t)*t*cy+t*t*to[1]]);}return pts;}
 
-// Ã¢ÂÂÃ¢ÂÂ Map init Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Map init ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 function initMap(){
   map=new maplibregl.Map({container:'map',style:'https://tiles.openfreemap.org/styles/liberty',center:[-71.8,42.4],zoom:6.8,attributionControl:false});
   map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
-  // Use load event - most reliable cross-browser approach
-  if(map.isStyleLoaded()){onMapReady();}
-  else{map.on('load',onMapReady);}
+  // OpenFreeMap never fires 'load' reliably - use styledata + layer count check
+  let _mapInitDone = false;
+  function _tryInit(){
+    if(_mapInitDone) return;
+    const layers = map.getStyle()?.layers?.length || 0;
+    console.log('_tryInit layers:', layers, 'styleLoaded:', map.isStyleLoaded());
+    if(layers > 50){
+      _mapInitDone = true;
+      console.log('Map init triggered at', layers, 'layers');
+      onMapReady();
+    }
+  }
+  map.on('styledata', _tryInit);
+  map.on('load', _tryInit);
+  map.on('render', ()=>{ if(!_mapInitDone) _tryInit(); });
+  setTimeout(()=>{ if(!_mapInitDone){ console.log('Fallback init'); _tryInit(); }}, 3000);
 }
 function onMapReady(){
   mapReady=true;
@@ -315,7 +328,7 @@ function onMapReady(){
       '<div class="popup-name">'+z.name+' <span style="color:#999;font-size:11px">('+z.zoneId+')</span></div>'+
       ['LMP','Energy','Congestion','Loss','Load','Solar BTM'].map((k,i)=>{
         const vals=[z.lmp,z.energy,z.cong,z.loss,z.load,z.btm];
-        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'Ã¢ÂÂ',v=>v!==null?'$'+v.toFixed(2):'Ã¢ÂÂ',v=>v!==null?'$'+v.toFixed(2):'Ã¢ÂÂ',v=>v!==null?'$'+v.toFixed(2):'Ã¢ÂÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'Ã¢ÂÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'Ã¢ÂÂ'];
+        const fmt=[v=>v!==null?'$'+v.toFixed(2)+'/MWh':'ÃÂ¢ÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂ¢ÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂ¢ÃÂÃÂ',v=>v!==null?'$'+v.toFixed(2):'ÃÂ¢ÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂ¢ÃÂÃÂ',v=>v!==null?Math.round(v).toLocaleString()+' MW':'ÃÂ¢ÃÂÃÂ'];
         return '<div class="popup-row"><span class="popup-key">'+k+'</span><span class="popup-val">'+fmt[i](vals[i])+'</span></div>';
       }).join('')
     ).addTo(map);
@@ -326,7 +339,7 @@ function onMapReady(){
     map.on('mousemove',lid,e=>{
       const f=e.features[0];if(!f)return;
       const v=f.properties.voltage||0;
-      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115Ã¢ÂÂ345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'Ã¢ÂÂ'],['Name',f.properties.name||'Ã¢ÂÂ']]);
+      showTip(e,'Transmission segment',[['Voltage',v?Math.round(v/1000)+' kV':'unknown'],['Tier',v>=345000?'345+ kV bulk':v>=115000?'115ÃÂ¢ÃÂÃÂ345 kV sub':'<115 kV dist'],['Operator',f.properties.operator||'ÃÂ¢ÃÂÃÂ'],['Name',f.properties.name||'ÃÂ¢ÃÂÃÂ']]);
       map.getCanvas().style.cursor='crosshair';
     });
     map.on('mouseleave',lid,()=>{hideTip();map.getCanvas().style.cursor='';});
@@ -334,14 +347,14 @@ function onMapReady(){
   // Hover on ext flows
   map.on('mousemove','ext-flow-line',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;
-    showTip(e,p.label+' Ã¢ÂÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'Ã¢ÂÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'Ã¢ÂÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'Ã¢ÂÂ'],['Source','ISO-NE measured (5-min)']]);
+    showTip(e,p.label+' ÃÂ¢ÃÂÃÂ External interchange',[['Direction',p.importing?'Importing into NE':'Exporting from NE'],['Flow',(p.importing?'ÃÂ¢ÃÂÃÂ ':'+')+(Math.round(Math.abs(p.mwAbs)))+' MW'],['Import limit',p.importLimit?Math.round(p.importLimit)+' MW':'ÃÂ¢ÃÂÃÂ'],['Export limit',p.exportLimit?Math.round(p.exportLimit)+' MW':'ÃÂ¢ÃÂÃÂ'],['Source','ISO-NE measured (5-min)']]);
     map.getCanvas().style.cursor='pointer';
   });
   map.on('mouseleave','ext-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
   // Hover on zone flows
   map.on('mousemove','zone-flow-line',e=>{
     const f=e.features[0];if(!f)return;const p=f.properties;const diff=Math.abs(parseFloat(p.lmpDiff));
-    showTip(e,p.fromZone+' Ã¢ÂÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
+    showTip(e,p.fromZone+' ÃÂ¢ÃÂÃÂ '+p.toZone+' (estimated)',[['From LMP','$'+parseFloat(p.lmpFrom).toFixed(2)+'/MWh'],['To LMP','$'+parseFloat(p.lmpTo).toFixed(2)+'/MWh'],['Price spread','ÃÂÃÂ$'+diff.toFixed(2)+'/MWh'],['Congestion',diff>20?'Heavily constrained':diff>8?'Moderate':'Unconstrained'],['Method','Derived from LMP spread']]);
     map.getCanvas().style.cursor='pointer';
   });
   map.on('mouseleave','zone-flow-line',()=>{hideTip();map.getCanvas().style.cursor='';});
@@ -425,7 +438,7 @@ function toggleFlows(){
   ['ext-flow-line','zone-flow-line'].forEach(id=>{if(map&&map.getLayer(id))map.setLayoutProperty(id,'visibility',flowsVisible?'visible':'none');});
 }
 
-// Ã¢ÂÂÃ¢ÂÂ Schematic Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Schematic ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 function renderSchematic(){
   const svg=document.getElementById('schematic-svg');
   svg.innerHTML='';
@@ -537,7 +550,7 @@ function renderSchematic(){
   }
 }
 
-// Ã¢ÂÂÃ¢ÂÂ Charts Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Charts ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 const TC='#555',GO='rgba(0,0,0,.07)';
 function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
@@ -587,7 +600,7 @@ function renderLoadSolar(){
 }
 
 function renderLmpHistory(){
-  // Placeholder Ã¢ÂÂ would need historical polling to build this
+  // Placeholder ÃÂ¢ÃÂÃÂ would need historical polling to build this
   // Show current zone LMPs as sparklines instead
   destroyChart('lmpHist');
   const zones=Object.values(state.zones).filter(z=>z.lmp!==null);
@@ -596,26 +609,26 @@ function renderLmpHistory(){
   charts['lmpHist']=new Chart(document.getElementById('ch-lmp-history').getContext('2d'),{type:'bar',data:{labels:zones.map(z=>z.zoneId),datasets:[{label:'LMP',data:zones.map(z=>z.lmp),backgroundColor:zones.map(z=>ZONE_COLORS[z.zoneId]||'#90a4ae'),borderRadius:5,borderSkipped:false},{label:'Energy',data:zones.map(z=>z.energy||0),backgroundColor:'rgba(26,115,232,.25)',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TC,font:{size:11},boxWidth:12},position:'top'},tooltip:{callbacks:{label:c=>c.dataset.label+': $'+c.parsed.y.toFixed(2)+'/MWh'}}},scales:{x:{ticks:{color:TC},grid:{color:GO}},y:{ticks:{color:TC,callback:v=>'$'+v},grid:{color:GO}}}}});
 }
 
-// Ã¢ÂÂÃ¢ÂÂ Table Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Table ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 function renderTable(){
   const rows=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>{
     if(state.sortField==='name')return state.sortDir*(a.name.localeCompare(b.name));
     return state.sortDir*((b[state.sortField]??-Infinity)-(a[state.sortField]??-Infinity));
   });
   ['name','lmp','load','btm','energy','cong','loss'].forEach(f=>{
-    const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'Ã¢ÂÂ':'Ã¢ÂÂ'):'';
+    const el=document.getElementById('arr-'+f);if(el)el.textContent=f===state.sortField?(state.sortDir===-1?'ÃÂ¢ÃÂÃÂ':'ÃÂ¢ÃÂÃÂ'):'';
     const th=document.getElementById('th-'+f);if(th)th.classList.toggle('sorted',f===state.sortField);
   });
   const mx=Math.max(...rows.map(r=>r.load||0));
   document.getElementById('tblBody').innerHTML=rows.map(z=>{
     const p=mx>0?((z.load||0)/mx*100).toFixed(0):0;
     return `<tr><td><span style="font-weight:500">${z.name}</span><span class="zone-id">${z.zoneId}</span></td>
-    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'Ã¢ÂÂ'}</span></td>
-    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'Ã¢ÂÂ'}</td>
-    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'Ã¢ÂÂ'}</td>
-    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'Ã¢ÂÂ'}</td>
-    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'Ã¢ÂÂ'}</td>
-    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'Ã¢ÂÂ'}</td>
+    <td><span class="lmp-val ${lmpClass(z.lmp)}">${z.lmp!==null?'$'+z.lmp.toFixed(2):'ÃÂ¢ÃÂÃÂ'}</span></td>
+    <td><div class="bar-bg"><div class="bar-fg" style="width:${p}%"></div></div>${z.load!==null?Math.round(z.load).toLocaleString():'ÃÂ¢ÃÂÃÂ'}</td>
+    <td>${z.btm!==null?Math.round(z.btm).toLocaleString():'ÃÂ¢ÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono)">${z.energy!==null?'$'+z.energy.toFixed(2):'ÃÂ¢ÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono);color:${z.cong>1?'#c62828':z.cong<-1?'#7b1fa2':'var(--text2)'}">${z.cong!==null?'$'+z.cong.toFixed(2):'ÃÂ¢ÃÂÃÂ'}</td>
+    <td style="font-family:var(--mono);color:var(--text2)">${z.loss!==null?'$'+z.loss.toFixed(2):'ÃÂ¢ÃÂÃÂ'}</td>
     <td>${badgeHtml(z.lmp)}</td></tr>`;
   }).join('')||'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text3)">No data</td></tr>';
 }
@@ -629,7 +642,7 @@ function setSort(f,btn){
 }
 function toggleDir(){state.sortDir*=-1;document.getElementById('dirBtn').textContent=state.sortDir===-1?'Highest first':'Lowest first';renderTable();}
 
-// Ã¢ÂÂÃ¢ÂÂ Metrics bar Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Metrics bar ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 function updateMetrics(){
   const sl=state.sysload;
   if(sl){document.getElementById('m-load').textContent=Math.round(sl.LoadMw||0).toLocaleString();document.getElementById('m-solar').textContent=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0)).toLocaleString();}
@@ -638,7 +651,7 @@ function updateMetrics(){
   const net=state.flows.reduce((s,f)=>s+f.flow,0);document.getElementById('m-flow').textContent=(net>=0?'+':'')+Math.round(net);
 }
 
-// Ã¢ÂÂÃ¢ÂÂ Fetch Ã¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ Fetch ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 async function fetchAll(bust){
   setLive('loading','Fetching...');setLdBar(10);
   const ts=bust?'?t='+Date.now():'';
