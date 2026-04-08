@@ -440,228 +440,61 @@ function toggleFlows(){
 function renderSchematic(){
   const wrap=document.querySelector('.schematic-wrap');
   const svg=document.getElementById('schematic-svg');
-
-  // Make SVG large and let the container scroll/zoom
-  const VW=762, VH=690;
+  const VW=980, VH=700;
   svg.setAttribute('viewBox','0 0 '+VW+' '+VH);
-  svg.setAttribute('width', VW);
-  svg.setAttribute('height', VH);
+  svg.setAttribute('width','100%');
+  svg.setAttribute('height',VH);
   svg.style.maxWidth='none';
-  svg.style.filter='drop-shadow(0 2px 12px rgba(0,0,0,0.1))';
   svg.innerHTML='';
-
-  // Zoom/pan Ã¢ÂÂ fresh setup each render
-  wrap._schZoom = wrap._schZoom||1;
-  wrap._schPX   = wrap._schPX  ||0;
-  wrap._schPY   = wrap._schPY  ||0;
-
-  // Container is the viewport, svg moves inside it
-  wrap.style.overflow='hidden';
-  wrap.style.cursor='grab';
-  wrap.style.userSelect='none';
-  wrap.style.padding='0';
-  wrap.style.alignItems='flex-start';
-  wrap.style.justifyContent='flex-start';
-  wrap.style.position='relative';
-
-  function applyTransform(){
-    svg.style.transform='translate('+wrap._schPX+'px,'+wrap._schPY+'px) scale('+wrap._schZoom+')';
-    svg.style.transformOrigin='0 0';
-  }
-  applyTransform();
-
-  // Remove old listeners by replacing wrap with a clone
-  const newWrap = wrap.cloneNode(false);
-  wrap.parentNode.insertBefore(newWrap, wrap);
-  newWrap.appendChild(svg);
-  wrap.parentNode.removeChild(wrap);
-  // Update reference
-  const w = newWrap;
-  w._schZoom = wrap._schZoom||1;
-  w._schPX   = wrap._schPX  ||0;
-  w._schPY   = wrap._schPY  ||0;
-  w.style.overflow='hidden';
-  w.style.cursor='grab';
-  w.style.userSelect='none';
-  w.style.padding='0';
-  w.style.alignItems='flex-start';
-  w.style.justifyContent='flex-start';
-  w.style.position='relative';
-  function applyT(){
-    svg.style.transform='translate('+w._schPX+'px,'+w._schPY+'px) scale('+w._schZoom+')';
-    svg.style.transformOrigin='0 0';
-  }
-  applyT();
-
-  // Zoom toward mouse cursor
-  w.addEventListener('wheel',function(e){
-    e.preventDefault();
-    const rect=w.getBoundingClientRect();
-    const mx=e.clientX-rect.left;
-    const my=e.clientY-rect.top;
-    const delta=e.deltaY>0?0.88:1.12;
-    const newZoom=Math.min(Math.max(w._schZoom*delta,0.3),4);
-    // Adjust pan so zoom centers on mouse
-    w._schPX = mx - (mx - w._schPX)*(newZoom/w._schZoom);
-    w._schPY = my - (my - w._schPY)*(newZoom/w._schZoom);
-    w._schZoom = newZoom;
-    applyT();
-  },{passive:false});
-
-  // Pan by dragging
-  let _dragging=false,_dx=0,_dy=0;
-  w.addEventListener('mousedown',function(e){
-    if(e.button!==0)return;
-    _dragging=true;_dx=e.clientX-w._schPX;_dy=e.clientY-w._schPY;
-    w.style.cursor='grabbing';
-  });
-  window.addEventListener('mousemove',function(e){
-    if(!_dragging)return;
-    w._schPX=e.clientX-_dx;w._schPY=e.clientY-_dy;
-    applyT();
-  });
-  window.addEventListener('mouseup',function(){
-    _dragging=false;w.style.cursor='grab';
-  });
-
-  // Double-click to reset
-  w.addEventListener('dblclick',function(){
-    w._schZoom=1;w._schPX=0;w._schPY=0;applyT();
-  });
-
+  if(!wrap._sz){wrap._sz=1;wrap._px=0;wrap._py=0;}
+  wrap.style.overflow='hidden';wrap.style.cursor='grab';wrap.style.userSelect='none';
+  wrap.style.padding='0';wrap.style.display='block';wrap.style.width='100%';
+  function apT(){svg.style.transform='translate('+wrap._px+'px,'+wrap._py+'px) scale('+wrap._sz+')';svg.style.transformOrigin='0 0';}
+  apT();
+  const nw=wrap.cloneNode(false);wrap.parentNode.insertBefore(nw,wrap);nw.appendChild(svg);wrap.parentNode.removeChild(wrap);
+  const w=nw;w._sz=wrap._sz||1;w._px=wrap._px||0;w._py=wrap._py||0;
+  w.style.overflow='hidden';w.style.cursor='grab';w.style.userSelect='none';w.style.padding='0';w.style.display='block';w.style.width='100%';
+  function at(){svg.style.transform='translate('+w._px+'px,'+w._py+'px) scale('+w._sz+')';svg.style.transformOrigin='0 0';}
+  at();
+  w.addEventListener('wheel',function(e){e.preventDefault();const rect=w.getBoundingClientRect();const mx=e.clientX-rect.left;const my=e.clientY-rect.top;const d=e.deltaY>0?0.88:1.12;const nz=Math.min(Math.max(w._sz*d,0.3),4);w._px=mx-(mx-w._px)*(nz/w._sz);w._py=my-(my-w._py)*(nz/w._sz);w._sz=nz;at();},{passive:false});
+  let _drag=false,_dx=0,_dy=0;
+  w.addEventListener('mousedown',function(e){if(e.button!==0)return;_drag=true;_dx=e.clientX-w._px;_dy=e.clientY-w._py;w.style.cursor='grabbing';});
+  window.addEventListener('mousemove',function(e){if(!_drag)return;w._px=e.clientX-_dx;w._py=e.clientY-_dy;at();});
+  window.addEventListener('mouseup',function(){_drag=false;w.style.cursor='grab';});
+  w.addEventListener('dblclick',function(){w._sz=1;w._px=0;w._py=0;at();});
   const NS='http://www.w3.org/2000/svg';
   function el(tag,attrs,txt){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));if(txt!==undefined)e.textContent=txt;return e;}
   function ap(p,...ch){ch.forEach(c=>p.appendChild(c));return p;}
-
   const FC={'Natural Gas':'#f4511e','Nuclear':'#8e24aa','Hydro':'#1a73e8','Wind':'#43a047','Solar':'#f9a825','Oil':'#795548','Other':'#90a4ae','Wood':'#6d4c41','Refuse':'#546e7a','Landfill Gas':'#00acc1','Coal':'#616161'};
-
-  // Zone positions Ã¢ÂÂ larger boxes with more breathing room
-  // Layout: 3 rows - N zones, M zones, S zones
-  // Row 1 (y=70):  VT | NH | ME
-  // Row 2 (y=265): WCMA | NEMA | SEMA
-  // Row 3 (y=460): CT | RI (centered under WCMA-NEMA and NEMA-SEMA)
-  const ZP={
-    VT:  {x:62,  y:70, w:195,h:140},
-    NH:  {x:282, y:70, w:195,h:140},
-    ME:  {x:502, y:70, w:195,h:140},
-    WCMA:{x:62,  y:265,w:195,h:145},
-    NEMA:{x:282, y:265,w:195,h:145},
-    SEMA:{x:502, y:265,w:195,h:145},
-    CT:  {x:62,  y:465,w:195,h:150},
-    RI:  {x:390, y:465,w:195,h:150},
-  };
-
-  // Background
+  const ZP={VT:{x:210,y:75,w:195,h:140},NH:{x:430,y:75,w:195,h:140},ME:{x:650,y:75,w:195,h:140},WCMA:{x:210,y:272,w:195,h:145},NEMA:{x:430,y:272,w:195,h:145},SEMA:{x:650,y:272,w:195,h:145},CT:{x:210,y:472,w:195,h:150},RI:{x:538,y:472,w:195,h:150}};
   ap(svg,el('rect',{x:0,y:0,width:VW,height:VH,fill:'#f8f9fa'}));
-
-  // Ã¢ÂÂÃ¢ÂÂ Top bar: fuel mix Ã¢ÂÂÃ¢ÂÂ
-  const tot=state.fuelMix.reduce((s,f)=>s+(f.GenMw||0),0);
-  const ftop=state.fuelMix.filter(f=>(f.GenMw||0)>30).sort((a,b)=>b.GenMw-a.GenMw).slice(0,7);
-  ap(svg,el('text',{x:16,y:16,'font-size':'12','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'GENERATION MIX'));
-  let bx=16;
-  const BARW=260,BARH=14;
-  ftop.forEach(f=>{const fw=Math.round((f.GenMw||0)/tot*BARW);const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';ap(svg,el('rect',{x:bx,y:20,width:fw,height:BARH,fill:fc,rx:1}));bx+=fw;});
-  let lx=16;
-  ftop.slice(0,6).forEach(f=>{
-    const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';
-    const pct=Math.round((f.GenMw||0)/tot*100);
-    const mw=Math.round(f.GenMw||0).toLocaleString();
-    ap(svg,el('rect',{x:lx,y:38,width:9,height:9,fill:fc,rx:1}),el('text',{x:lx+12,y:47,'font-size':'11','font-family':'Inter,sans-serif',fill:'#555'},(f.FuelCategory||f.FuelCategoryRollup||'?').substring(0,11)+' '+pct+'% / '+mw+'MW'));
-    lx+=160;
-  });
-
-  // System stats top right
+  const tot=state.fuelMix.reduce((s,f)=>s+(f.GenMw||0),0)||1;
+  const ftop=state.fuelMix.filter(f=>(f.GemMw||0)>30).sort((a,b)=>b.GenMw-a.GenMw).slice(0,5);
+  ap(svg,el('text',{x:16,y:14,'font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'GENERATION MIX'));
+  let bx=16;ftop.forEach(f=>{const fw=Math.round((f.GemMw||0)/tot*220);const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';ap(svg,el('rect',{x:bx,y:18,width:fw,height:11,fill:fc,rx:1}));bx+=fw;});
+  let lx=16;ftop.forEach(f=>{const fc=FC[f.FuelCategory||f.FuelCategoryRollup]||'#90a4ae';const pct=Math.round((f.GenMw||0)/tot*100);const mw=Math.round(f.GemMw||0).toLocaleString();ap(svg,el('rect',{x:lx,y:33,width:7,height:7,fill:fc,rx:1}),el('text',{x:lx+9,y:40,'font-size':'9','font-family':'Inter,sans-serif',fill:'#555'},(f.FuelCategory||f.FuelCategoryRollup||'?').substring(0,10)+' '+pct+'%/'+mw+'MW'));lx+=130;});
   const sl=state.sysload;
-  if(sl){
-    const net=Math.round(state.flows.reduce((s,f)=>s+(f.flow||0),0));
-    const solar=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0));
-    [['System load',Math.round(sl.LoadMw||0).toLocaleString()+' MW'],
-     ['Solar BTM offset',solar.toLocaleString()+' MW'],
-     ['Net interchange',(net>=0?'+':'')+net+' MW']
-    ].forEach(([lb,vl],i)=>{
-      ap(svg,
-        el('text',{x:VW-16,y:16+i*17,'text-anchor':'end','font-size':'11','font-family':'Inter,sans-serif','font-weight':'500',fill:'#888'},lb),
-        el('text',{x:VW-16,y:16+i*17,'text-anchor':'start','font-size':'12','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:'#333',dx:'5'},vl)
-      );
-    });
-  }
-
-  // Ã¢ÂÂÃ¢ÂÂ Zoom hint Ã¢ÂÂÃ¢ÂÂ
-  ap(svg,el('text',{x:VW/2,y:59,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'Scroll to zoom ÃÂ· Double-click to reset'));
-
-  // Ã¢ÂÂÃ¢ÂÂ Color helper Ã¢ÂÂÃ¢ÂÂ
-  function lmpC(v){
-    if(v===null)return{fill:'#eceff1',border:'#90a4ae',text:'#546e7a',hdr:'#90a4ae'};
-    if(v<0)  return{fill:'#f3e5f5',border:'#7b1fa2',text:'#6a1b9a',hdr:'#7b1fa2'};
-    if(v<30) return{fill:'#e8f5e9',border:'#43a047',text:'#2e7d32',hdr:'#43a047'};
-    if(v<60) return{fill:'#fff3e0',border:'#fb8c00',text:'#e65100',hdr:'#fb8c00'};
-    if(v<90) return{fill:'#ffebee',border:'#e53935',text:'#c62828',hdr:'#e53935'};
-    return{fill:'#fce4ec',border:'#880e4f',text:'#880e4f',hdr:'#880e4f'};
-  }
-
-  // Ã¢ÂÂÃ¢ÂÂ Zone box Ã¢ÂÂÃ¢ÂÂ
+  if(sl){const net=Math.round(state.flows.reduce((s,f)=>s+(f.flow||0),0));const solar=Math.round((sl.SystemLoadBtmPv||0)-(sl.LoadMw||0));[['Sys load',Math.round(sl.LoadMw||0).toLocaleString()+' MW'],['Solar BTM',solar.toLocaleString()+' MW'],['Net int',(net>=0?'+':'')+net+' MW']].forEach(([lb,vl],i)=>{ap(svg,el('text',{x:VW-8,y:14+i*14,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif',fill:'#888'},lb+': '+vl));});}
+  ap(svg,el('text',{x:VW/2,y:56,'text-anchor':'middle','font-size':'9','font-family':'Inter,sans-serif',fill:'#bbb'},'Scroll to zoom  |  Drag to pan  |  Double-click to reset'));
+  function lmpC(v){if(v===null)return{fill:'#eceff1',border:'#90a4ae',text:'#546e7a',hdr:'#90a4ae'};if(v<0)return{fill:'#f3e5f5',border:'#7b1fa2',text:'#6a1b9a',hdr:'#7b1fa2'};if(v<30)return{fill:'#e8f5e9',border:'#43a047',text:'#2e7d32',hdr:'#43a047'};if(v<60)return{fill:'#fff3e0',border:'#fb8c00',text:'#e65100',hdr:'#fb8c00'};if(v<90)return{fill:'#ffebee',border:'#e53935',text:'#c62828',hdr:'#e53935'};return{fill:'#fce4ec',border:'#880e4f',text:'#880e4f',hdr:'#880e4f'};}
   function drawZone(zid){
     const pos=ZP[zid];if(!pos)return;
     const zs=Object.values(state.zones).find(z=>z.zoneId===zid);
-    const lmp=zs?zs.lmp:null;
-    const {fill,border,text,hdr}=lmpC(lmp);
-    const g=el('g',{});
-
-    // Shadow
+    const lmp=zs?zs.lmp:null;const {fill,border,text,hdr}=lmpC(lmp);const g=el('g',{});
     ap(g,el('rect',{x:pos.x+3,y:pos.y+3,width:pos.w,height:pos.h,fill:'rgba(0,0,0,0.08)',rx:10}));
-    // Body
     ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:pos.h,fill,stroke:border,'stroke-width':2.5,rx:10}));
-    // Header bar
     ap(g,el('rect',{x:pos.x,y:pos.y,width:pos.w,height:32,fill:hdr,rx:10}));
     ap(g,el('rect',{x:pos.x,y:pos.y+22,width:pos.w,height:10,fill:hdr}));
-    // Zone ID
     ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+22,'text-anchor':'middle','font-size':'15','font-family':'Inter,sans-serif','font-weight':'700',fill:'#fff'},zid));
-
-    // Full zone name
-    const zoneName=zs?zs.name:zid;
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+44,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#aaa'},zoneName));
-
-    // LMP Ã¢ÂÂ large and prominent
-    const lmpStr=lmp!==null?'$'+lmp.toFixed(2):'-';
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+68,'text-anchor':'middle','font-size':'19','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:text},lmpStr));
-    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+84,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#bbb'},'$/MWh LMP'));
-
-    // Divider
-    ap(g,el('line',{x1:pos.x+12,y1:pos.y+82,x2:pos.x+pos.w-12,y2:pos.y+82,stroke:'rgba(0,0,0,0.1)','stroke-width':0.5}));
-
-    // Load and BTM
-    if(zs&&zs.load!=null){
-      ap(g,
-        el('text',{x:pos.x+12,y:pos.y+95,'font-size':'11','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'LOAD'),
-        el('text',{x:pos.x+12,y:pos.y+110,'font-size':'14','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#333'},Math.round(zs.load).toLocaleString()+' MW')
-      );
-    }
-    if(zs&&zs.btm!=null&&zs.btm>0){
-      ap(g,
-        el('text',{x:pos.x+pos.w-12,y:pos.y+104,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#888'},'Ã¢ÂÂ BTM SOLAR'),
-        el('text',{x:pos.x+pos.w-12,y:pos.y+110,'text-anchor':'end','font-size':'14','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW')
-      );
-    }
-
-    // Energy/congestion mini bar
-    if(zs&&zs.energy!=null){
-      const bw=pos.w-24,bh=7,by2=pos.y+pos.h-16,bxz=pos.x+12;
-      const epx=Math.max(Math.min((zs.energy||0)/60,1)*bw,2);
-      const cpx=Math.min(Math.abs(zs.cong||0)/10,1)*(bw*0.3);
-      ap(g,
-        el('rect',{x:bxz,y:by2,width:bw,height:bh,fill:'rgba(0,0,0,0.07)',rx:2}),
-        el('rect',{x:bxz,y:by2,width:epx,height:bh,fill:'#1a73e8',rx:2})
-      );
-      if(Math.abs(zs.cong||0)>0.1){
-        ap(g,el('rect',{x:bxz+epx,y:by2,width:Math.max(cpx,2),height:bh,fill:(zs.cong||0)>0?'#e53935':'#7b1fa2',rx:1}));
-      }
-      const eStr='E:$'+(zs.energy||0).toFixed(1)+(Math.abs(zs.cong||0)>0.1?' C:$'+(zs.cong||0).toFixed(1):'');
-      ap(g,el('text',{x:bxz,y:by2-3,'font-size':'10','font-family':'Inter,sans-serif',fill:'#999'},eStr));
-    }
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+43,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#aaa'},zs?zs.name:zid));
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+67,'text-anchor':'middle','font-size':'19','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:text},lmp!==null?'$'+lmp.toFixed(2):'-'));
+    ap(g,el('text',{x:pos.x+pos.w/2,y:pos.y+78,'text-anchor':'middle','font-size':'9','font-family':'Inter,sans-serif',fill:'#bbb'},'$/MWh LMP'));
+    ap(g,el('line',{x1:pos.x+12,y1:pos.y+83,x2:pos.x+pos.w-12,y2:pos.y+83,stroke:'rgba(0,0,0,0.1)','stroke-width':0.5}));
+    if(zs&&zs.load!=null){ap(g,el('text',{x:pos.x+12,y:pos.y+94,'font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#777'},'LOAD'),el('text',{x:pos.x+12,y:pos.y+108,'font-size':'14','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#333'},Math.round(zs.load).toLocaleString()+' MW'));}
+    if(zs&&zs.btm!=null&&zs.btm>5){ap(g,el('text',{x:pos.x+pos.w-12,y:pos.y+94,'text-anchor':'end','font-size':'10','font-family':'Inter,sans-serif','font-weight':'600',fill:'#777'},'BTM Solar'),el('text',{x:pos.x+pos.w-12,y:pos.y+108,'text-anchor':'end','font-size':'14','font-family':'JetBrains Mono,monospace','font-weight':'600',fill:'#43a047'},Math.round(zs.btm).toLocaleString()+' MW'));}
+    if(zs&&zs.energy!=null){const bw=pos.w-24,bh=7,by2=pos.y+pos.h-15,bxz=pos.x+12;const epx=Math.max(Math.min((zs.energy||0)/60,1)*bw,2);const cpx=Math.min(Math.abs(zs.cong||0)/10,1)*(bw*0.3);ap(g,el('rect',{x:bxz,y:by2,width:bw,height:bh,fill:'rgba(0,0,0,0.07)',rx:2}),el('rect',{x:bxz,y:by2,width:epx,height:bh,fill:'#1a73e8',rx:2}));if(Math.abs(zs.cong||0)>0.1)ap(g,el('rect',{x:bxz+epx,y:by2,width:Math.max(cpx,2),height:bh,fill:(zs.cong||0)>0?'#e53935':'#7b1fa2',rx:1}));ap(g,el('text',{x:bxz,y:by2-3,'font-size':'9','font-family':'Inter,sans-serif',fill:'#999'},'E:$'+(zs.energy||0).toFixed(1)+(Math.abs(zs.cong||0)>0.1?' C:$'+(zs.cong||0).toFixed(1):'')));}
     ap(svg,g);
   }
-
-  // Ã¢ÂÂÃ¢ÂÂ Inter-zone flow arrow Ã¢ÂÂÃ¢ÂÂ
   function drawZoneFlow(fId,tId,ox){
     const fp=ZP[fId],tp=ZP[tId];if(!fp||!tp)return;
     const zsF=Object.values(state.zones).find(z=>z.zoneId===fId);
@@ -671,87 +504,47 @@ function renderSchematic(){
     const sP=diff>0?fp:tp,dP=diff>0?tp:fp;
     const sr=Math.abs(sP.y-dP.y)<80;
     let x1,y1,x2,y2;
-    if(sr){
-      const gr=dP.x>sP.x;
-      x1=gr?sP.x+sP.w:sP.x;y1=sP.y+sP.h/2;
-      x2=gr?dP.x:dP.x+dP.w;y2=dP.y+dP.h/2;
-    } else {
-      x1=sP.x+sP.w/2+(ox||0);y1=dP.y>sP.y?sP.y+sP.h:sP.y;
-      x2=dP.x+dP.w/2+(ox||0);y2=dP.y>sP.y?dP.y:dP.y+dP.h;
-    }
-    const ad=Math.abs(diff);
-    const col=ad>20?'#e53935':ad>8?'#fb8c00':ad>3?'#1a73e8':'#90a4ae';
+    if(sr){const gr=dP.x>sP.x;x1=gr?sP.x+sP.w:sP.x;y1=sP.y+sP.h/2;x2=gr?dP.x:dP.x+dP.w;y2=dP.y+dP.h/2;}
+    else{x1=sP.x+sP.w/2+(ox||0);y1=dP.y>sP.y?sP.y+sP.h:sP.y;x2=dP.x+dP.w/2+(ox||0);y2=dP.y>sP.y?dP.y:dP.y+dP.h;}
+    const ad=Math.abs(diff);const col=ad>20?'#e53935':ad>8?'#fb8c00':ad>3?'#1a73e8':'#90a4ae';
     const sw=Math.max(1.5,Math.min(ad/3,4.5));
     const mx=(x1+x2)/2,my=(y1+y2)/2;
     const ang=Math.atan2(y2-y1,x2-x1);const al=11,aw=6;
     const ax1=x2-al*Math.cos(ang)+aw*Math.sin(ang),ay1=y2-al*Math.sin(ang)-aw*Math.cos(ang);
     const ax2=x2-al*Math.cos(ang)-aw*Math.sin(ang),ay2=y2-al*Math.sin(ang)+aw*Math.cos(ang);
-    ap(svg,
-      el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.75'}),
-      el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col,opacity:'0.9'}),
-      el('rect',{x:mx-22,y:my-9,width:44,height:17,fill:'rgba(255,255,255,0.92)',rx:4}),
-      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'ÃÂ$'+ad.toFixed(2))
-    );
+    ap(svg,el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.75'}),el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col,opacity:'0.9'}),el('rect',{x:mx-22,y:my-9,width:44,height:17,fill:'rgba(255,255,255,0.92)',rx:4}),el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'10','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},'diff $'+ad.toFixed(2)));
   }
-
-  // Ã¢ÂÂÃ¢ÂÂ External interface arrow Ã¢ÂÂÃ¢ÂÂ
   function drawExtFlow(key,label,ex,ey,toZid,side){
     const flow=state.flows.find(f=>f.name.toUpperCase().includes(key.toUpperCase()));
     if(!flow||Math.abs(flow.flow)<5)return;
     const mw=Math.abs(Math.round(flow.flow));const imp=flow.flow<0;
     const tp=ZP[toZid];if(!tp)return;
     let tx,ty;
-    if(side==='left'){tx=tp.x;ty=tp.y+tp.h/2;}
-    else if(side==='right'){tx=tp.x+tp.w;ty=tp.y+tp.h/2;}
-    else if(side==='top'){tx=tp.x+tp.w/2;ty=tp.y;}
-    else{tx=tp.x+tp.w/2;ty=tp.y+tp.h;}
+    if(side==='left'){tx=tp.x;ty=tp.y+tp.h/2;}else if(side==='right'){tx=tp.x+tp.w;ty=tp.y+tp.h/2;}else if(side==='top'){tx=tp.x+tp.w/2;ty=tp.y;}else{tx=tp.x+tp.w/2;ty=tp.y+tp.h;}
     const x1=imp?ex:tx,y1=imp?ey:ty,x2=imp?tx:ex,y2=imp?ty:ey;
-    const col=imp?'#0d47a1':'#b71c1c';
-    const sw=Math.min(2.5+mw/400,6.5);
+    const col=imp?'#0d47a1':'#b71c1c';const sw=Math.min(2.5+mw/400,6.5);
     const ang=Math.atan2(y2-y1,x2-x1);const al=12,aw=6;
     const ax1=x2-al*Math.cos(ang)+aw*Math.sin(ang),ay1=y2-al*Math.sin(ang)-aw*Math.cos(ang);
     const ax2=x2-al*Math.cos(ang)-aw*Math.sin(ang),ay2=y2-al*Math.sin(ang)+aw*Math.cos(ang);
     const mx=(x1+x2)/2,my=(y1+y2)/2;
-    ap(svg,
-      el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.9'}),
-      el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col}),
-      el('rect',{x:mx-34,y:my-10,width:68,height:19,fill:'rgba(255,255,255,0.93)',rx:4,stroke:col,'stroke-width':'0.8'}),
-      el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'Ã¢ÂÂ':'Ã¢ÂÂ')+mw+'MW')
-    );
+    ap(svg,el('line',{x1,y1,x2,y2,stroke:col,'stroke-width':sw,opacity:'0.9'}),el('polygon',{points:x2+','+y2+' '+ax1+','+ay1+' '+ax2+','+ay2,fill:col}),el('rect',{x:mx-36,y:my-10,width:72,height:19,fill:'rgba(255,255,255,0.93)',rx:4,stroke:col,'stroke-width':'0.8'}),el('text',{x:mx,y:my+3,'text-anchor':'middle','font-size':'11','font-family':'JetBrains Mono,monospace','font-weight':'700',fill:col},label+' '+(imp?'IN':'OUT')+' '+mw+'MW'));
   }
-
-  // Draw flow connections first (behind boxes)
-  drawZoneFlow('VT','WCMA');
-  drawZoneFlow('NH','NEMA');
-  drawZoneFlow('ME','NH',-25);
-  drawZoneFlow('WCMA','NEMA');
-  drawZoneFlow('NEMA','SEMA');
+  drawZoneFlow('VT','WCMA');drawZoneFlow('NH','NEMA');drawZoneFlow('ME','NH',-25);
+  drawZoneFlow('WCMA','NEMA');drawZoneFlow('NEMA','SEMA');
   drawZoneFlow('WCMA','CT',0);drawZoneFlow('NEMA','CT',0);
   drawZoneFlow('NEMA','RI',0);drawZoneFlow('SEMA','RI',0);
   drawZoneFlow('CT','RI');
-
-  // External interfaces
-  drawExtFlow('ROSETON', 'NY-H', 10, ZP.WCMA.y+ZP.WCMA.h/2, 'WCMA','left');
-  drawExtFlow('SALBRYNB','NY-N', 10, ZP.CT.y+ZP.CT.h/2,     'CT',  'left');
-  drawExtFlow('HQMRL',   'QC-NE',ZP.ME.x+ZP.ME.w/2, 12,     'ME',  'top');
-  drawExtFlow('HQ_P1',   'QC-P1',ZP.VT.x+ZP.VT.w/2, 12,     'VT',  'top');
-  drawExtFlow('HQHIGATE','NB',   VW-10, ZP.ME.y+40,          'ME',  'right');
-
-  // Zone boxes on top
+  drawExtFlow('ROSETON','NY-H',10,ZP.WCMA.y+ZP.WCMA.h/2,'WCMA','left');
+  drawExtFlow('SALBRYNB','NY-N',10,ZP.CT.y+ZP.CT.h/2,'CT','left');
+  drawExtFlow('HQMRL','QC-NE',ZP.ME.x+ZP.ME.w/2,12,'ME','top');
+  drawExtFlow('HQ_P1','QC-P1',ZP.VT.x+ZP.VT.w/2,12,'VT','top');
+  drawExtFlow('HQHIGATE','NB',VW-10,ZP.ME.y+40,'ME','right');
   Object.keys(ZP).forEach(drawZone);
-
-  // Timestamp + legend
   const ts=Object.values(state.zones).find(z=>z.ts)?new Date(Object.values(state.zones).find(z=>z.ts).ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'--:--';
-  ap(svg,
-    el('text',{x:VW/2,y:VH-6,'text-anchor':'middle','font-size':'10','font-family':'Inter,sans-serif',fill:'#ccc'},
-      'ISO-NE Load Zones ÃÂ· LMP $/MWh ÃÂ· '+ts+' ÃÂ· Arrow = energy flow direction ÃÂ· ÃÂ$ = price spread ÃÂ· Ã¢ÂÂ = import Ã¢ÂÂ = export')
-  );
+  ap(svg,el('text',{x:VW/2,y:VH-6,'text-anchor':'middle','font-size':'9','font-family':'Inter,sans-serif',fill:'#ccc'},'ISO-NE Load Zones | LMP $/MWh | '+ts+' | Arrow = energy flow | diff $ = price spread | IN = import OUT = export'));
 }
 
 
-
-const TC='#555',GO='rgba(0,0,0,.07)';
-function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
 function renderCharts(){
   if(!document.getElementById('panel-charts').classList.contains('active'))return;
