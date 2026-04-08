@@ -546,6 +546,8 @@ function renderSchematic(){
 
 
 
+function destroyChart(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+
 function renderCharts(){
   if(!document.getElementById('panel-charts').classList.contains('active'))return;
   renderLmpBar();
