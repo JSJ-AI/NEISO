@@ -72,14 +72,49 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .schematic-leg{display:flex;align-items:center;gap:5px}
 .schematic-leg-sw{width:12px;height:12px;border-radius:2px}
 /* CHARTS */
-.charts-wrap{flex:1;overflow:auto;padding:16px;background:var(--bg);display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.charts-wrap{flex:1;overflow:auto;padding:16px;background:var(--bg);display:grid;grid-template-columns:2fr 3fr;gap:12px}
 .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
 .chart-card.full{grid-column:1/-1}
 .chart-card-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
 .chart-card-sub{font-size:11px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0}
-.cw{position:relative;height:180px}
-.cw-sm{position:relative;height:140px}
-.cw-lg{position:relative;height:220px}
+.cw{position:relative;height:160px}
+.cw-sm{position:relative;height:120px}
+.cw-lg{position:relative;height:200px}
+
+.storms-wrap{flex:1;overflow:auto;padding:16px;background:var(--bg)}
+.storms-header{display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.storms-title{font-size:14px;font-weight:700;color:var(--text)}
+.storms-meta{font-size:11px;color:var(--text3)}
+.storms-link{font-size:12px;color:#1a73e8;text-decoration:none;margin-left:auto}
+.storms-link:hover{text-decoration:underline}
+.storms-section-title{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:14px 0 8px}
+.storms-loading{color:var(--text3);font-size:13px;padding:12px 0}
+.alert-card{background:var(--bg2);border-left:4px solid #ccc;border-radius:6px;padding:10px 14px;margin-bottom:8px;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:start}
+.alert-card.extreme{border-color:#880e4f}
+.alert-card.severe{border-color:#e53935}
+.alert-card.moderate{border-color:#fb8c00}
+.alert-card.minor{border-color:#1a73e8}
+.alert-card.unknown{border-color:#90a4ae}
+.alert-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:3px;white-space:nowrap;color:#fff}
+.alert-badge.extreme{background:#880e4f}
+.alert-badge.severe{background:#e53935}
+.alert-badge.moderate{background:#fb8c00}
+.alert-badge.minor{background:#1a73e8}
+.alert-badge.unknown{background:#90a4ae}
+.alert-body{min-width:0}
+.alert-event{font-size:13px;font-weight:600;color:var(--text)}
+.alert-areas{font-size:11px;color:var(--text3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-time{font-size:10px;color:var(--text3);text-align:right;white-space:nowrap}
+.alert-state{font-size:11px;font-weight:700;color:var(--text2);min-width:24px}
+.no-alerts{background:var(--bg2);border-radius:6px;padding:14px;text-align:center;color:var(--text3);font-size:13px}
+.hist-table{width:100%;border-collapse:collapse;font-size:13px}
+.hist-table th{text-align:left;padding:7px 10px;font-size:11px;font-weight:600;color:var(--text3);border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:.05em}
+.hist-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.hist-table tr:hover td{background:var(--bg2)}
+.hist-impact{display:inline-block;padding:2px 6px;border-radius:3px;font-size:11px;font-weight:600}
+.hist-impact.high{background:#fce4ec;color:#880e4f}
+.hist-impact.med{background:#fff3e0;color:#e65100}
+.hist-impact.low{background:#e8f5e9;color:#2e7d32}
 /* TABLE */
 .tbl-toolbar{padding:9px 18px;display:flex;gap:7px;align-items:center;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;background:var(--bg2)}
 .sort-lbl{font-size:12px;color:var(--text3);font-weight:500}
@@ -194,12 +229,12 @@ tbody td{padding:9px 11px;color:var(--text);overflow:hidden;text-overflow:ellips
         <div class="cw"><canvas id="ch-lmp-bar"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-card-title">Generation fuel mix <span class="chart-card-sub">current MW</span></div>
-        <div class="cw"><canvas id="ch-fuel"></canvas></div>
-      </div>
-      <div class="chart-card">
         <div class="chart-card-title">LMP components <span class="chart-card-sub">energy / congestion / loss</span></div>
         <div class="cw"><canvas id="ch-components"></canvas></div>
+      </div>
+      <div class="chart-card full">
+        <div class="chart-card-title">Generation fuel mix <span class="chart-card-sub">current MW</span></div>
+        <div class="cw-sm"><canvas id="ch-fuel"></canvas></div>
       </div>
       <div class="chart-card">
         <div class="chart-card-title">External interchange <span class="chart-card-sub">MW by interface</span></div>
@@ -212,6 +247,25 @@ tbody td{padding:9px 11px;color:var(--text);overflow:hidden;text-overflow:ellips
     </div>
   </div>
 
+  
+  <!-- STORMS TAB -->
+  <div id="panel-storms" class="panel">
+    <div class="storms-wrap">
+      <div class="storms-header">
+        <div class="storms-title">New England Weather Alerts &amp; Storm Events</div>
+        <div class="storms-meta" id="storms-updated">Loading...</div>
+        <a href="https://poweroutage.us/area/state/connecticut" target="_blank" class="storms-link">Live outage counts &#8599; poweroutage.us</a>
+      </div>
+      <div id="storms-alerts-wrap">
+        <div class="storms-section-title">Active NWS Alerts</div>
+        <div id="storms-alerts"><div class="storms-loading">Loading alerts...</div></div>
+      </div>
+      <div id="storms-history-wrap">
+        <div class="storms-section-title">Major Historical Storm Events &amp; Grid Impact</div>
+        <div id="storms-history"></div>
+      </div>
+    </div>
+  </div>
   <!-- TABLE TAB -->
   <div id="panel-table" class="panel">
     <div class="tbl-toolbar">
@@ -624,6 +678,61 @@ function renderLmpHistory(){
 }
 
 // ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ Table ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ¢ÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂÃÂ
+
+async function fetchStorms(){
+  try{
+    const r=await fetch('https://isone-proxy.jsj-ai.workers.dev/alerts');
+    return await r.json();
+  }catch(e){return{alerts:[],updated:null};}
+}
+
+function renderStorms(data){
+  const upd=document.getElementById('storms-updated');
+  if(upd&&data.updated)upd.textContent='Updated '+new Date(data.updated).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const wrap=document.getElementById('storms-alerts');
+  if(!wrap)return;
+  const alerts=data.alerts||[];
+  if(alerts.length===0){
+    wrap.innerHTML='<div class="no-alerts">&#10003; No active weather alerts for New England</div>';
+  } else {
+    const sevOrder={Extreme:0,Severe:1,Moderate:2,Minor:3,Unknown:4};
+    alerts.sort((a,b)=>(sevOrder[a.severity]||4)-(sevOrder[b.severity]||4));
+    wrap.innerHTML=alerts.map(a=>{
+      const sev=(a.severity||'Unknown').toLowerCase();
+      const end=a.end?new Date(a.end).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+      return '<div class="alert-card '+sev+'">'
+        +'<div class="alert-state">'+a.state+'</div>'
+        +'<div class="alert-body">'
+        +'<div class="alert-event">'+a.event+'</div>'
+        +'<div class="alert-areas">'+a.areas+'</div>'
+        +'</div>'
+        +'<div><span class="alert-badge '+sev+'">'+a.severity+'</span><div class="alert-time">Until '+end+'</div></div>'
+        +'</div>';
+    }).join('');
+  }
+  // Historical events
+  const hist=document.getElementById('storms-history');
+  if(hist){
+    const events=[
+      {date:'Mar 2018',name:'Winter Storm Riley',states:'MA/CT/RI',out:'400,000',lmp:'NEMA hit $200+/MWh',impact:'high'},
+      {date:'Feb 2013',name:'Winter Storm Nemo',states:'All NE',out:'650,000',lmp:'Hub LMP peaked $280/MWh',impact:'high'},
+      {date:'Oct 2011',name:'Halloween Nor'easter',states:'MA/CT',out:'800,000',lmp:'Load drop 800MW in WCMA',impact:'high'},
+      {date:'Aug 2011',name:'Hurricane Irene',states:'VT/NH',out:'900,000',lmp:'VT zone isolated, +$45 spread',impact:'high'},
+      {date:'Jan 2018',name:'Bomb Cyclone',states:'All NE',out:'50,000',lmp:'Hub LMP $175/MWh, nat gas scarcity',impact:'med'},
+      {date:'Dec 2022',name:'Winter Storm Elliott',states:'All NE',out:'75,000',lmp:'Fuel mix shift to oil, +20% load',impact:'med'},
+    ];
+    hist.innerHTML='<table class="hist-table"><thead><tr><th>Date</th><th>Event</th><th>States</th><th>Est. Outages</th><th>Grid Impact</th><th>Severity</th></tr></thead><tbody>'
+      +events.map(e=>'<tr><td>'+e.date+'</td><td>'+e.name+'</td><td>'+e.states+'</td><td>'+e.out+'</td><td>'+e.lmp+'</td><td><span class="hist-impact '+e.impact+'">'+(e.impact==='high'?'High':e.impact==='med'?'Moderate':'Low')+'</span></td></tr>').join('')
+      +'</tbody></table>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:8px">Sources: NERC, ISO-NE post-event reports, EIA OE-417. For live outage counts visit <a href='https://poweroutage.us' target='_blank' style='color:#1a73e8'>poweroutage.us</a></div>';
+  }
+}
+
+async function initStorms(){
+  const data=await fetchStorms();
+  renderStorms(data);
+}
+
 function renderTable(){
   const rows=Object.values(state.zones).filter(z=>z.lmp!==null).sort((a,b)=>{
     if(state.sortField==='name')return state.sortDir*(a.name.localeCompare(b.name));
