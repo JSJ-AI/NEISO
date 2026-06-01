@@ -120,6 +120,7 @@ tbody td{padding:9px 11px;color:var(--text);overflow:hidden;text-overflow:ellips
     <div class="live-indicator"><div class="live-dot loading" id="liveDot"></div><span id="liveText">Connecting...</span></div>
     <button class="hdr-btn" onclick="clearCache()">Clear cache</button>
     <button class="hdr-btn" onclick="fetchAll()">Refresh</button>
+    <button class="hdr-btn" onclick="j2ShowAbout()" title="About this site">About</button>
   </div>
 </div>
 <div id="metrics-bar">
@@ -720,5 +721,45 @@ initMap();
 fetchAll();
 setInterval(fetchAll,300000);
 </script>
+<!-- ========== J2A "About this site" modal (self-contained) ========== -->
+<style>
+  #j2a-about{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;
+    align-items:center;justify-content:center;z-index:99999;font-family:var(--sans);}
+  #j2a-about.show{display:flex;}
+  .j2a-box{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;
+    max-width:640px;width:92%;max-height:88vh;overflow-y:auto;padding:26px 30px 22px;
+    position:relative;color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.3);}
+  .j2a-box h2{font-size:19px;letter-spacing:.01em;margin:0 0 4px;color:var(--accent);font-weight:700;}
+  .j2a-sub{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:16px;}
+  .j2a-box p{font-size:14.5px;line-height:1.6;margin:0 0 13px;color:var(--text);}
+  .j2a-box .j2a-em{color:var(--accent);font-weight:600;}
+  .j2a-x{position:absolute;top:10px;right:14px;background:none;border:none;color:var(--text3);
+    font-size:24px;line-height:1;cursor:pointer;font-family:inherit;}
+  .j2a-x:hover{color:var(--text);}
+  .j2a-ok{display:block;width:100%;margin-top:14px;padding:12px;background:var(--accent-light);
+    border:1px solid var(--accent);border-radius:6px;color:var(--accent);font-family:inherit;
+    font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;cursor:pointer;transition:filter .15s;}
+  .j2a-ok:hover{filter:brightness(.96);}
+</style>
+
+<div id="j2a-about" onclick="if(event.target.id==='j2a-about')j2HideAbout()">
+  <div class="j2a-box">
+    <button class="j2a-x" onclick="j2HideAbout()" aria-label="Close">&times;</button>
+    <h2>About &mdash; ISO-NE Grid Monitor</h2>
+    <div class="j2a-sub">Live ISO New England Data &middot; Real-Time Grid &middot; MapLibre GL + Chart.js</div>
+    <p>ISO-NE Grid Monitor is a real-time dashboard for the New England power system &mdash; the six-state electric grid run by <span class="j2a-em">ISO New England</span>. It pulls live public grid data (relayed through a Cloudflare Worker proxy) and surfaces the metrics operators watch: total <span class="j2a-em">system load</span> in megawatts, behind-the-meter <span class="j2a-em">solar offset</span>, <span class="j2a-em">fuel mix</span> by generation source, and <span class="j2a-em">Locational Marginal Prices (LMP)</span> by zone and hub. Figures refresh automatically every <span class="j2a-em">five minutes</span>, and the Refresh button forces an immediate update.</p>
+    <p>The map is built with <span class="j2a-em">MapLibre GL</span> on OpenFreeMap tiles and overlays the region&rsquo;s transmission network, while <span class="j2a-em">Chart.js</span> renders load and price trends. It is a working example of taking an open wholesale-electricity feed and turning it into a clean, at-a-glance picture of how New England&rsquo;s grid is performing right now.</p>
+    <button class="j2a-ok" onclick="j2HideAbout()">OK &mdash; I understand</button>
+  </div>
+</div>
+
+<script>
+  function j2ShowAbout(){var m=document.getElementById('j2a-about');if(m)m.classList.add('show');}
+  function j2HideAbout(){var m=document.getElementById('j2a-about');if(m)m.classList.remove('show');}
+  window.addEventListener('DOMContentLoaded',j2ShowAbout); // auto-open on load; delete this line for click-only
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')j2HideAbout();});
+</script>
+<!-- ========== end About modal ========== -->
+
 </body>
 </html>
